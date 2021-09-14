@@ -2,7 +2,7 @@
 
 <div align="center"><img src="https://gitlab.com/jcfields/sega-cd-memory-manager/raw/master/screenshot.png" width="766" height="353" alt="[Sega CD Memory Manager]"></div>
 
-An program for managing save files for the Sega CD/Mega CD. Written in C# using Windows Forms.
+A program for managing save files for the Sega CD/Mega CD. Written in C# using Windows Forms.
 
 ## Releases
 

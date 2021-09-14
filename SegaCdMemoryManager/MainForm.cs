@@ -248,9 +248,9 @@ namespace SegaCdMemoryManager
 
             toolStripButtonSave.Enabled = _isModified[id];
             textBoxFileName.Text = Path.GetFileName(bramFile.Path);
-            toolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed} files";
-            toolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree} blocks free";
-            toolStripStatusLabelFileSize.Text = $"{bramFile.FileSize} bytes";
+            toolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} files";
+            toolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} blocks free";
+            toolStripStatusLabelFileSize.Text = $"{bramFile.FileSize:n0} bytes";
 
             ChangeListView(id);
         }
