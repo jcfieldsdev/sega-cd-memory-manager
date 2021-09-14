@@ -42,7 +42,7 @@ namespace SegaCdMemoryManager
 
         private void logoPictureBox_Click(object sender, EventArgs e)
         {
-            logoPictureBox.Image = _switch ? Properties.Resources.model1 : Properties.Resources.model2;
+            logoPictureBox.Image = _switch ? Properties.Resources.image_model1 : Properties.Resources.image_model2;
             _switch = !_switch;
         }
 

@@ -115,7 +115,7 @@ namespace SegaCdMemoryManager
             this.logoPictureBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.logoPictureBox.Image = global::SegaCdMemoryManager.Properties.Resources.model1;
+            this.logoPictureBox.Image = global::SegaCdMemoryManager.Properties.Resources.image_model1;
             this.logoPictureBox.Location = new System.Drawing.Point(3, 3);
             this.logoPictureBox.Name = "logoPictureBox";
             this.logoPictureBox.Size = new System.Drawing.Size(338, 154);

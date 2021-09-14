@@ -395,14 +395,14 @@ namespace SegaCdMemoryManager
         {
             if (_blocksFree < newEntry.SizeInBlocks)
             {
-                throw new Exception("Not enough remaining space to add that entry.");
+                throw new Exception($"Not enough remaining space to add the entry {newEntry.Name}.");
             }
 
             foreach (var entry in _entries)
             {
                 if (entry.Name == newEntry.Name)
                 {
-                    throw new Exception($"An entry named {entry.Name} already exists in this file.");
+                    throw new Exception($"An entry named {newEntry.Name} already exists in this file.");
                 }
             }
 

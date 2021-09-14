@@ -10,9 +10,11 @@ Binary versions are available on the [Releases](https://gitlab.com/jcfields/sega
 
 ## Acknowledgments
 
-Sega CD file system format derived from [scdbrm](https://sourceforge.net/p/scdtools/code/HEAD/tree/scdbrm) by [Brian Van Buren](https://sourceforge.net/u/bgvanbur/profile/).
+Sega CD file system format derived from [scdbrm](https://sourceforge.net/p/scdtools/code/HEAD/tree/scdbrm) by [Brian Van Buren](https://sourceforge.net/u/bgvanbur/profile/).
 
 Uses [Fluency icons](https://icons8.com/icons/fluency) from [Icon8](https://icons8.com/).
+
+Uses Sega CD pictures by [Evan-Amos](https://commons.wikimedia.org/wiki/User:Evan-Amos).
 
 ## Authors
 

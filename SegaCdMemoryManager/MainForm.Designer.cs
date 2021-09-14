@@ -34,6 +34,12 @@ namespace SegaCdMemoryManager
             this.listViewEntries1 = new System.Windows.Forms.ListView();
             this.columnHeaderName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderSize = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItemExport1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripMenuItemMove1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemCopy1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItemDelete1 = new System.Windows.Forms.ToolStripMenuItem();
             this.listViewEntries2 = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -77,18 +83,13 @@ namespace SegaCdMemoryManager
             this.toolStripButtonMove2 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonCopy2 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonDelete2 = new System.Windows.Forms.ToolStripButton();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.toolStripMenuItemExport1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripMenuItemMove1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItemCopy1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItemDelete1 = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemExport2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItemMove2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemCopy2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemDelete2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
@@ -96,7 +97,6 @@ namespace SegaCdMemoryManager
             this.panel2.SuspendLayout();
             this.statusStrip2.SuspendLayout();
             this.toolStrip2.SuspendLayout();
-            this.contextMenuStrip1.SuspendLayout();
             this.contextMenuStrip2.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -127,6 +127,51 @@ namespace SegaCdMemoryManager
             // 
             this.columnHeaderSize.Text = "Size (blocks)";
             this.columnHeaderSize.Width = 100;
+            // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItemExport1,
+            this.toolStripMenuItem2,
+            this.toolStripMenuItemMove1,
+            this.toolStripMenuItemCopy1,
+            this.toolStripMenuItemDelete1});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(118, 98);
+            this.contextMenuStrip1.Tag = "0";
+            // 
+            // toolStripMenuItemExport1
+            // 
+            this.toolStripMenuItemExport1.Name = "toolStripMenuItemExport1";
+            this.toolStripMenuItemExport1.Size = new System.Drawing.Size(117, 22);
+            this.toolStripMenuItemExport1.Text = "&Export...";
+            this.toolStripMenuItemExport1.Click += new System.EventHandler(this.toolStripButtonExport1_Click);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(114, 6);
+            // 
+            // toolStripMenuItemMove1
+            // 
+            this.toolStripMenuItemMove1.Name = "toolStripMenuItemMove1";
+            this.toolStripMenuItemMove1.Size = new System.Drawing.Size(117, 22);
+            this.toolStripMenuItemMove1.Text = "&Move";
+            this.toolStripMenuItemMove1.Click += new System.EventHandler(this.toolStripButtonMove1_Click);
+            // 
+            // toolStripMenuItemCopy1
+            // 
+            this.toolStripMenuItemCopy1.Name = "toolStripMenuItemCopy1";
+            this.toolStripMenuItemCopy1.Size = new System.Drawing.Size(117, 22);
+            this.toolStripMenuItemCopy1.Text = "&Copy";
+            this.toolStripMenuItemCopy1.Click += new System.EventHandler(this.toolStripButtonCopy1_Click);
+            // 
+            // toolStripMenuItemDelete1
+            // 
+            this.toolStripMenuItemDelete1.Name = "toolStripMenuItemDelete1";
+            this.toolStripMenuItemDelete1.Size = new System.Drawing.Size(117, 22);
+            this.toolStripMenuItemDelete1.Text = "&Delete";
+            this.toolStripMenuItemDelete1.Click += new System.EventHandler(this.toolStripButtonDelete1_Click);
             // 
             // listViewEntries2
             // 
@@ -551,51 +596,6 @@ namespace SegaCdMemoryManager
             this.toolStripButtonDelete2.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this.toolStripButtonDelete2.Click += new System.EventHandler(this.toolStripButtonDelete2_Click);
             // 
-            // contextMenuStrip1
-            // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItemExport1,
-            this.toolStripMenuItem2,
-            this.toolStripMenuItemMove1,
-            this.toolStripMenuItemCopy1,
-            this.toolStripMenuItemDelete1});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 120);
-            this.contextMenuStrip1.Tag = "0";
-            // 
-            // toolStripMenuItemExport1
-            // 
-            this.toolStripMenuItemExport1.Name = "toolStripMenuItemExport1";
-            this.toolStripMenuItemExport1.Size = new System.Drawing.Size(180, 22);
-            this.toolStripMenuItemExport1.Text = "&Export...";
-            this.toolStripMenuItemExport1.Click += new System.EventHandler(this.toolStripButtonExport1_Click);
-            // 
-            // toolStripMenuItem2
-            // 
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
-            // 
-            // toolStripMenuItemMove1
-            // 
-            this.toolStripMenuItemMove1.Name = "toolStripMenuItemMove1";
-            this.toolStripMenuItemMove1.Size = new System.Drawing.Size(180, 22);
-            this.toolStripMenuItemMove1.Text = "&Move";
-            this.toolStripMenuItemMove1.Click += new System.EventHandler(this.toolStripButtonMove1_Click);
-            // 
-            // toolStripMenuItemCopy1
-            // 
-            this.toolStripMenuItemCopy1.Name = "toolStripMenuItemCopy1";
-            this.toolStripMenuItemCopy1.Size = new System.Drawing.Size(180, 22);
-            this.toolStripMenuItemCopy1.Text = "&Copy";
-            this.toolStripMenuItemCopy1.Click += new System.EventHandler(this.toolStripButtonCopy1_Click);
-            // 
-            // toolStripMenuItemDelete1
-            // 
-            this.toolStripMenuItemDelete1.Name = "toolStripMenuItemDelete1";
-            this.toolStripMenuItemDelete1.Size = new System.Drawing.Size(180, 22);
-            this.toolStripMenuItemDelete1.Text = "&Delete";
-            this.toolStripMenuItemDelete1.Click += new System.EventHandler(this.toolStripButtonDelete1_Click);
-            // 
             // contextMenuStrip2
             // 
             this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -655,6 +655,7 @@ namespace SegaCdMemoryManager
             this.Name = "MainForm";
             this.Text = "Sega CD Memory Manager";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
+            this.contextMenuStrip1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
@@ -668,7 +669,6 @@ namespace SegaCdMemoryManager
             this.statusStrip2.PerformLayout();
             this.toolStrip2.ResumeLayout(false);
             this.toolStrip2.PerformLayout();
-            this.contextMenuStrip1.ResumeLayout(false);
             this.contextMenuStrip2.ResumeLayout(false);
             this.ResumeLayout(false);
 

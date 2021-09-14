@@ -61,6 +61,26 @@ namespace SegaCdMemoryManager.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon appicon_model1 {
+            get {
+                object obj = ResourceManager.GetObject("appicon_model1", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon appicon_model2 {
+            get {
+                object obj = ResourceManager.GetObject("appicon_model2", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         internal static byte[] blank {
@@ -203,6 +223,26 @@ namespace SegaCdMemoryManager.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap icon_rename1 {
+            get {
+                object obj = ResourceManager.GetObject("icon_rename1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap icon_rename2 {
+            get {
+                object obj = ResourceManager.GetObject("icon_rename2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap icon_save1 {
             get {
                 object obj = ResourceManager.GetObject("icon_save1", resourceCulture);
@@ -223,9 +263,9 @@ namespace SegaCdMemoryManager.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap model1 {
+        internal static System.Drawing.Bitmap image_model1 {
             get {
-                object obj = ResourceManager.GetObject("model1", resourceCulture);
+                object obj = ResourceManager.GetObject("image_model1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -233,9 +273,9 @@ namespace SegaCdMemoryManager.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap model2 {
+        internal static System.Drawing.Bitmap image_model2 {
             get {
-                object obj = ResourceManager.GetObject("model2", resourceCulture);
+                object obj = ResourceManager.GetObject("image_model2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -54,6 +54,11 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="SaveEntry.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -71,14 +76,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Include="Resources\blank.brm" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -149,6 +149,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icon-import2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\model1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\model2.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\appicon-model1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\appicon-model2.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\image-model1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\image-model2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
