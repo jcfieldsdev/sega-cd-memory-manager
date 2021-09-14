@@ -24,8 +24,8 @@ namespace SegaCdMemoryManager
         private const string FileFilter = "Sega CD memory file|*.brm;*crm";
         private const string EntryFilter = "Sega CD save entry file|*.srm";
 
-        private BramFile[] _bramFiles;
-        private bool[] _isModified;
+        private readonly BramFile[] _bramFiles;
+        private readonly bool[] _isModified;
 
         public MainForm(string[] args)
         {
@@ -238,7 +238,7 @@ namespace SegaCdMemoryManager
 
             foreach (var entry in bramFile.Entries)
             {
-                var row = new string[] { entry.Name, entry.Size.ToString() };
+                var row = new string[] { entry.Name, entry.SizeInBlocks.ToString() };
                 var listViewItem = new ListViewItem(row)
                 {
                     Tag = entry
@@ -250,7 +250,7 @@ namespace SegaCdMemoryManager
             textBoxFileName.Text = Path.GetFileName(bramFile.Path);
             toolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} files";
             toolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} blocks free";
-            toolStripStatusLabelFileSize.Text = $"{bramFile.FileSize:n0} bytes";
+            toolStripStatusLabelFileSize.Text = $"{bramFile.SizeInBytes:n0} bytes";
 
             ChangeListView(id);
         }
@@ -470,7 +470,6 @@ namespace SegaCdMemoryManager
 
         private void ExportEntry(int id)
         {
-            var bramFile = _bramFiles[id];
             ListView listViewEntries = null;
 
             if (id == (int)File.Left)

@@ -13,7 +13,8 @@ namespace SegaCdMemoryManager
 		{
 			FileSize = 8192,
 			BlockSize = 64,
-			DirectorySize = 32
+			DirectorySize = 32,
+			Underscores = 11
 		}
 
 		enum FooterOffset
@@ -35,29 +36,48 @@ namespace SegaCdMemoryManager
 			Name = 11
 		}
 
+		private readonly struct Record
+		{
+			public Record(string name, byte protect, int start, int size)
+			{
+				Name = name;
+				Protect = protect;
+				Start = start;
+				SizeInBlocks = size;
+			}
+
+			public string Name { get; }
+			public byte Protect { get; }
+			public int Start { get; }
+			public int SizeInBlocks { get; }
+        }
+
 		private const string Identifier = "SEGA_CD_ROM\x00\x01\x00\x00\x00RAM_CARTRIDGE___";
 
 		private string _path;
-		private byte[] _data;
-        private List<SaveEntry> _entries;
+        private readonly List<SaveEntry> _entries;
+		private readonly byte[] _headerBlock;
 		private int _filesUsed;
 		private int _blocksFree;
+        private readonly int _fileSize;
 
 		public string Path { get => _path; set => _path = value; }
-		public List<SaveEntry> Entries { get => _entries; }
+        public List<SaveEntry> Entries { get => _entries; }
 		public int FilesUsed { get => _filesUsed; }
 		public int BlocksFree { get => _blocksFree; }
-		public int FileSize { get => _data.Length; }
+		public int SizeInBytes { get => _fileSize; }
 
 		public BramFile(string path = "")
         {
-            _data = path == "" ? NewFile() : OpenFile(path);
+            byte[] data = path == "" ? NewFile() : OpenFile(path);
+
             _path = path;
-
 			_entries = new List<SaveEntry>();
+			_headerBlock = data.Take((int)Format.BlockSize).ToArray();
+			_fileSize = data.Length;
 
-			ReadFooter();
-			ReadEntries();
+			ReadFooter(data);
+			ReadEntries(data);
         }
 
         private byte[] NewFile()
@@ -90,13 +110,13 @@ namespace SegaCdMemoryManager
             return data;
         }
 
-		private void ReadFooter()
+		private void ReadFooter(byte[] data)
         {
-			int start = _data.Length - (int)Format.BlockSize;
+			int start = data.Length - (int)Format.BlockSize;
 
 			// values are stored four times each for redundancy
-			byte[] filesUsedSlice = _data.Skip(start + (int)FooterOffset.FilesUsed).Take(8).ToArray();
-			byte[] blocksFreeSlice = _data.Skip(start + (int)FooterOffset.BlocksFree).Take(8).ToArray();
+			byte[] filesUsedSlice = data.Skip(start + (int)FooterOffset.FilesUsed).Take(8).ToArray();
+			byte[] blocksFreeSlice = data.Skip(start + (int)FooterOffset.BlocksFree).Take(8).ToArray();
 
 			if (BitConverter.IsLittleEndian)
 			{
@@ -133,12 +153,12 @@ namespace SegaCdMemoryManager
 			_blocksFree = blocksFree1;
 		}
 
-		private void ReadEntries()
+		private void ReadEntries(byte[] data)
         {
 			for (int i = 0; i < _filesUsed; i++)
             {
-				int blockStart = _data.Length - (int)Format.BlockSize - (i + 1) * (int)Format.BlockSize;
-				byte[] block = DecodeBlock(_data.Skip(blockStart).Take((int)Format.BlockSize).ToArray());
+				int blockStart = data.Length - (int)Format.BlockSize - (i + 1) * (int)Format.BlockSize;
+				byte[] block = DecodeBlock(data.Skip(blockStart).Take((int)Format.BlockSize).ToArray());
 
 				// each block contains data for up to two entries
 				for (int j = 0; j < 2; j++)
@@ -147,7 +167,7 @@ namespace SegaCdMemoryManager
 					byte[] record = block.Skip(recordStart).Take((int)Format.DirectorySize / 2).ToArray();
 
 					string name = System.Text.Encoding.ASCII.GetString(record, (int)RecordOffset.Name, (int)RecordLength.Name);
-					int protect = record[(int)RecordOffset.Protect];
+					byte protect = record[(int)RecordOffset.Protect];
 
                     byte[] startSlice = record.Skip((int)RecordOffset.Start).Take(2).ToArray();
 					byte[] sizeSlice = record.Skip((int)RecordOffset.Size).Take(2).ToArray();
@@ -167,16 +187,50 @@ namespace SegaCdMemoryManager
 						continue;
                     }
 
-					byte[] data = _data.Skip(start * (int)Format.BlockSize).Take(size * (int)Format.BlockSize).ToArray();
+					byte[] entryData = data.Skip(start * (int)Format.BlockSize).Take(size * (int)Format.BlockSize).ToArray();
 
-					_entries.Add(new SaveEntry(name, protect, data));
+					_entries.Add(new SaveEntry(name, protect, entryData));
                 }
 			}
 
 			CountEntries();
 		}
 
+		private void CountEntries()
+		{
+			int bytesUsed = 0;
+
+			foreach (var entry in _entries)
+			{
+				bytesUsed += entry.SizeInBytes;
+			}
+
+			// subtracts header and footer blocks, directory, and save files
+			int directorySizeInBlocks = (int)Math.Ceiling((float)_filesUsed / 2);
+			int blocksFree = (_fileSize - bytesUsed) / (int)Format.BlockSize - directorySizeInBlocks - 2;
+
+			// if file contains even number of entries, subtract one free block since
+			// next block of data will require adding another directory block
+			if (_filesUsed % 2 == 0)
+			{
+				blocksFree--;
+			}
+
+			_filesUsed = _entries.Count;
+			_blocksFree = Math.Max(blocksFree, 0);
+		}
+
 		private byte[] DecodeBlock(byte[] block)
+        {
+			if (BitConverter.IsLittleEndian)
+            {
+				return DecodeBlockLittleEndian(block);
+            }
+			
+			return DecodeBlockBigEndian(block);
+        }
+
+		private byte[] DecodeBlockLittleEndian(byte[] block)
         {
 			byte[] directory = new byte[(int)Format.DirectorySize + 4];
 			uint bits = 0;
@@ -184,7 +238,7 @@ namespace SegaCdMemoryManager
 			for (int i = 0, j = 0; j < (int)Format.DirectorySize + 4; i++)
             {
 				int shift = (i * 2) % 8;
-				bits |= (uint)((block[i] & 0xfc) << shift);
+				bits |= (uint)((block[i] & 0x00fc) << shift);
 
 				if (shift > 0)
                 {
@@ -198,42 +252,148 @@ namespace SegaCdMemoryManager
 			return directory.Skip(2).Take((int)Format.DirectorySize).ToArray();
         }
 
+		private byte[] DecodeBlockBigEndian(byte[] block)
+		{
+			byte[] directory = new byte[(int)Format.DirectorySize + 4];
+			uint bits = 0;
+
+			for (int i = 0, j = 0; j < (int)Format.DirectorySize + 4; i++)
+			{
+				int shift = (i * 2) % 8;
+				bits |= (uint)((block[i] & 0xfc00) << shift);
+
+				if (shift > 0)
+				{
+					directory[j] = (byte)((bits & 0x00ff) >> 8);
+					j++;
+				}
+
+				bits <<= 8;
+			}
+
+			return directory.Skip(2).Take((int)Format.DirectorySize).ToArray();
+		}
+
 		private byte[] EncodeDirectory(byte[] directory)
         {
-			return null;
+
+			if (BitConverter.IsLittleEndian)
+			{
+				return EncodeDirectoryLittleEndian(directory);
+			}
+
+			return EncodeDirectoryBigEndian(directory);
+		}
+
+		private byte[] EncodeDirectoryLittleEndian(byte[] directory)
+        {
+			var contents = new List<byte>();
+			contents.AddRange(directory);
+			contents.AddRange(new byte[(int)Format.BlockSize / 2]);
+
+			return contents.ToArray();
         }
 
-		private void CountEntries()
+		private byte[] EncodeDirectoryBigEndian(byte[] directory)
 		{
-			int bytesUsed = 0;
+			var contents = new List<byte>();
+			contents.AddRange(directory);
+			contents.AddRange(new byte[(int)Format.BlockSize / 2]);
 
-			foreach (var entry in _entries)
-			{
-				bytesUsed += entry.Size * (int)Format.BlockSize;
-			}
-
-			_filesUsed = _entries.Count;
-
-			// subtracts header and footer blocks, directory, and save files
-			int directorySize = (int)Math.Ceiling((float)_filesUsed / 2) * (int)Format.BlockSize;
-			_blocksFree = (_data.Length - 2 * (int)Format.BlockSize - directorySize - bytesUsed) / (int)Format.BlockSize;
-
-			// if file contains even number of entries, subtract one free block since
-			// next block of data will require adding another directory block
-			if (_filesUsed % 2 == 0)
-			{
-				_blocksFree--;
-			}
+			return contents.ToArray();
 		}
 
 		public void WriteFile()
         {
+			var records = new Record[_filesUsed];
+			var contents = new List<byte>(_fileSize);
+			int iter = 0, offset = 0;
 
-        }
+			// writes header block
+			contents.AddRange(_headerBlock);
+			offset += _headerBlock.Length;
+			
+			// writes entry data
+			foreach (var entry in _entries)
+            {
+				var record = new Record(entry.Name, entry.Protect, offset + 1, entry.SizeInBlocks);
+				records[iter] = record;
+				offset += entry.SizeInBytes;
+				iter++;
+
+				contents.AddRange(entry.Data);
+			}
+
+			// writes filler bytes
+			int directorySizeInBytes = (int)Math.Ceiling((float)_filesUsed / 2) * (int)Format.BlockSize;
+			int fillerBytes = _fileSize - (int)Format.BlockSize - offset - directorySizeInBytes;
+			contents.AddRange(new byte[fillerBytes]);
+
+			// writes directory
+			for (int i = 0; i < (float)_filesUsed / 2; i++)
+            {
+				var directory = new List<byte>();
+
+				for (int j = 0; j < 2; j++)
+                {
+					int index = 2 * i + (1 - j);
+
+					// handles missing record when odd number of entries
+					if (index > records.Length - 1)
+                    {
+						directory.AddRange(new byte[(int)Format.DirectorySize / 2]);
+						continue;
+                    }
+
+					Record record = records[index];
+					byte[] start = BitConverter.GetBytes((short)record.Start);
+					byte[] size = BitConverter.GetBytes((short)record.SizeInBlocks);
+
+					if (BitConverter.IsLittleEndian)
+					{
+						Array.Reverse(start);
+						Array.Reverse(size);
+					}
+
+					directory.AddRange(Encoding.ASCII.GetBytes(record.Name.PadRight((int)RecordLength.Name, '\0')));
+					directory.Add(record.Protect);
+					directory.AddRange(start);
+					directory.AddRange(size);
+                }
+
+				contents.AddRange(EncodeDirectory(directory.ToArray()));
+            }
+
+			byte[] underscores = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat('_', (int)Format.Underscores)));
+			byte[] blocksFree = BitConverter.GetBytes((short)_blocksFree);
+			byte[] filesUsed = BitConverter.GetBytes((short)_filesUsed);
+
+			if (BitConverter.IsLittleEndian)
+			{
+				Array.Reverse(blocksFree);
+				Array.Reverse(filesUsed);
+			}
+
+			// writes footer block
+			contents.AddRange(underscores);
+			contents.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x40 });
+			contents.AddRange(blocksFree);
+			contents.AddRange(blocksFree);
+			contents.AddRange(blocksFree);
+			contents.AddRange(blocksFree);
+			contents.AddRange(filesUsed);
+			contents.AddRange(filesUsed);
+			contents.AddRange(filesUsed);
+			contents.AddRange(filesUsed);
+			contents.AddRange(Encoding.ASCII.GetBytes(Identifier));
+
+			// writes bytes to file
+			File.WriteAllBytes(_path, contents.ToArray());
+		}
 
 		public void AddEntry(SaveEntry newEntry)
         {
-			if (_blocksFree < newEntry.Size)
+			if (_blocksFree < newEntry.SizeInBlocks)
             {
 				throw new Exception("Not enough remaining space to add that entry.");
             }
@@ -273,7 +433,7 @@ namespace SegaCdMemoryManager
 			byte[] data = File.ReadAllBytes(path);
 			int offset = data.Length - (int)RecordLength.Name - 1;
 			string name = System.Text.Encoding.ASCII.GetString(data, offset, (int)RecordLength.Name);
-			int protect = data[data.Length - 1];
+			byte protect = data[data.Length - 1];
 
 			var entry = new SaveEntry(name, protect, data.Take(offset).ToArray());
 			AddEntry(entry);

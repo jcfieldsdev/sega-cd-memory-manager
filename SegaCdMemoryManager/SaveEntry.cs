@@ -20,14 +20,17 @@ namespace SegaCdMemoryManager
             Protect = 1
         }
 
-        private string _name;
-        private int _protect;
-        private byte[] _data;
+        private readonly string _name;
+        private readonly byte _protect;
+        private readonly byte[] _data;
 
-        public string Name { get => _name; set => _name = value; }
-        public int Size { get => _data.Length / (int)Format.BlockSize; }
+        public string Name { get => _name; }
+        public byte Protect { get => _protect; }
+        public byte[] Data { get => _data; }
+        public int SizeInBlocks { get => _data.Length / (int)Format.BlockSize; }
+        public int SizeInBytes { get => _data.Length; }
 
-        public SaveEntry(string name, int protect, byte[] data)
+        public SaveEntry(string name, byte protect, byte[] data)
         {
 
             _name = name;
@@ -40,12 +43,12 @@ namespace SegaCdMemoryManager
             int length = _data.Length + (int)RecordLength.Name + (int)RecordLength.Protect;
             byte[] name = Encoding.ASCII.GetBytes(_name.PadRight((int)RecordLength.Name, '\0'));
 
-            List<byte> list = new List<byte>(length);
-            list.AddRange(_data);
-            list.AddRange(name);
-            list.Add((byte)_protect);
+            var contents = new List<byte>(length);
+            contents.AddRange(_data);
+            contents.AddRange(name);
+            contents.Add(_protect);
 
-            File.WriteAllBytes(path, list.ToArray());
+            File.WriteAllBytes(path, contents.ToArray());
         }
     }
 }
