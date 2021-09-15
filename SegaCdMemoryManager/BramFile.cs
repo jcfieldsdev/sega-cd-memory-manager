@@ -163,6 +163,11 @@ namespace SegaCdMemoryManager
                 // each block contains data for up to two entries
                 for (int j = 0; j < 2; j++)
                 {
+                    if (_entries.Count >= _filesUsed)
+                    {
+                        continue;
+                    }
+
                     int recordStart = (1 - j) * (int)Format.DirectorySize / 2;
                     byte[] record = block.Skip(recordStart).Take((int)Format.DirectorySize / 2).ToArray();
 

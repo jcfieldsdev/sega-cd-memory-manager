@@ -81,7 +81,7 @@ namespace SegaCdMemoryManager
             this.flowLayoutPanel3.Controls.Add(this.label2);
             this.flowLayoutPanel3.Location = new System.Drawing.Point(12, 73);
             this.flowLayoutPanel3.Name = "flowLayoutPanel3";
-            this.flowLayoutPanel3.Size = new System.Drawing.Size(300, 33);
+            this.flowLayoutPanel3.Size = new System.Drawing.Size(300, 45);
             this.flowLayoutPanel3.TabIndex = 6;
             // 
             // label2
@@ -89,10 +89,10 @@ namespace SegaCdMemoryManager
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(3, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(278, 26);
+            this.label2.Size = new System.Drawing.Size(290, 39);
             this.label2.TabIndex = 0;
-            this.label2.Text = "Valid names can contain alphanumeric characters or underscores and must be at mos" +
-    "t 11 characters long.";
+            this.label2.Text = "Valid names can contain letters, numbers, and underscores and must be between 1 a" +
+    "nd 11 characters in length.";
             // 
             // RenameDialog
             // 
@@ -100,7 +100,7 @@ namespace SegaCdMemoryManager
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(324, 121);
+            this.ClientSize = new System.Drawing.Size(324, 131);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonRename);
             this.Controls.Add(this.textBoxName);
