@@ -423,7 +423,7 @@ namespace SegaCdMemoryManager
                 try
                 {
                     var entry = listViewItem.Tag as SaveEntry;
-                    using (var renameDialog = new RenameDialog()
+                    using (var renameDialog = new RenameDialog
                     {
                         EntryName = entry.Name
                     })

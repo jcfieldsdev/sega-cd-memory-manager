@@ -369,7 +369,6 @@ namespace SegaCdMemoryManager
                 contents.AddRange(EncodeDirectory(directory.ToArray()));
             }
 
-            byte[] underscores = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat('_', (int)Format.Underscores)));
             byte[] blocksFree = BitConverter.GetBytes((short)_blocksFree);
             byte[] filesUsed = BitConverter.GetBytes((short)_filesUsed);
 
@@ -380,7 +379,7 @@ namespace SegaCdMemoryManager
             }
 
             // writes footer block
-            contents.AddRange(underscores);
+            contents.AddRange(Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat('_', (int)Format.Underscores))));
             contents.AddRange(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x40 });
             contents.AddRange(blocksFree);
             contents.AddRange(blocksFree);
