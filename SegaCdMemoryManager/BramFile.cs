@@ -240,15 +240,15 @@ namespace SegaCdMemoryManager
             byte[] directory = new byte[(int)Format.DirectorySize + 4];
             uint bits = 0;
 
-            for (int i = 0, j = 0; j < (int)Format.DirectorySize + 4; i++)
+            for (int blockIndex = 0, directoryIndex = 0; directoryIndex < (int)Format.DirectorySize + 4; blockIndex++)
             {
-                int shift = (i * 2) % 8;
-                bits |= (uint)((block[i] & 0x00fc) << shift);
+                int shift = (blockIndex * 2) % 8;
+                bits |= (uint)((block[blockIndex] & 0x00fc) << shift);
 
                 if (shift > 0)
                 {
-                    directory[j] = (byte)((bits & 0xff00) >> 8);
-                    j++;
+                    directory[directoryIndex] = (byte)((bits & 0xff00) >> 8);
+                    directoryIndex++;
                 }
 
                 bits <<= 8;
@@ -262,15 +262,15 @@ namespace SegaCdMemoryManager
             byte[] directory = new byte[(int)Format.DirectorySize + 4];
             uint bits = 0;
 
-            for (int i = 0, j = 0; j < (int)Format.DirectorySize + 4; i++)
+            for (int blockIndex = 0, directoryIndex = 0; directoryIndex < (int)Format.DirectorySize + 4; blockIndex++)
             {
-                int shift = (i * 2) % 8;
-                bits |= (uint)((block[i] & 0xfc00) << shift);
+                int shift = (blockIndex * 2) % 8;
+                bits |= (uint)((block[blockIndex] & 0xfc00) << shift);
 
                 if (shift > 0)
                 {
-                    directory[j] = (byte)((bits & 0x00ff) >> 8);
-                    j++;
+                    directory[directoryIndex] = (byte)((bits & 0x00ff) >> 8);
+                    directoryIndex++;
                 }
 
                 bits <<= 8;
@@ -312,26 +312,26 @@ namespace SegaCdMemoryManager
         {
             var records = new Record[_filesUsed];
             var contents = new List<byte>(_fileSize);
-            int iter = 0, offset = 0;
+            int bytesUsed = 0;
 
             // writes header block
             contents.AddRange(_headerBlock);
-            offset += _headerBlock.Length;
+            bytesUsed += _headerBlock.Length;
             
             // writes entry data
-            foreach (var entry in _entries)
+            for (int i = 0; i < _entries.Count; i++)
             {
-                var record = new Record(entry.Name, entry.Protect, offset + 1, entry.SizeInBlocks);
-                records[iter] = record;
-                offset += entry.SizeInBytes;
-                iter++;
+                var entry = _entries[i];
+                var record = new Record(entry.Name, entry.Protect, bytesUsed + 1, entry.SizeInBlocks);
+                records[i] = record;
+                bytesUsed += entry.SizeInBytes;
 
                 contents.AddRange(entry.Data);
             }
 
             // writes filler bytes
             int directorySizeInBytes = (int)Math.Ceiling((float)_filesUsed / 2) * (int)Format.BlockSize;
-            int fillerBytes = _fileSize - (int)Format.BlockSize - offset - directorySizeInBytes;
+            int fillerBytes = _fileSize - (int)Format.BlockSize - bytesUsed - directorySizeInBytes;
             contents.AddRange(new byte[fillerBytes]);
 
             // writes directory
@@ -430,7 +430,7 @@ namespace SegaCdMemoryManager
 
             FileInfo fileInfo = new FileInfo(path);
 
-            if (fileInfo.Length % (int)Format.BlockSize != 0)
+            if ((fileInfo.Length - (int)RecordLength.Name - 1) % (int)Format.BlockSize != 0)
             {
                 throw new Exception("The specified file is not a valid save entry.");
             }
@@ -440,7 +440,7 @@ namespace SegaCdMemoryManager
             string name = System.Text.Encoding.ASCII.GetString(data, offset, (int)RecordLength.Name);
             byte protect = data[data.Length - 1];
 
-            if (name.Length == 0 || (protect != 0x00 || protect != 0xff))
+            if (name.Length == 0 || (protect != 0x00 && protect != 0xff))
             {
                 throw new Exception("The specified file is not a valid save entry.");
             }
@@ -464,7 +464,6 @@ namespace SegaCdMemoryManager
             }
 
             _fileSize = fileSize;
-
             CountEntries();
         }
     }
