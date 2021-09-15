@@ -33,19 +33,15 @@ namespace SegaCdMemoryManager
             System.Diagnostics.Process.Start(WebSiteUrl);
         }
 
-#pragma warning disable IDE1006 // Naming Styles
-
-        private void labelWebSiteUrl_Click(object sender, EventArgs e)
+        private void ClickVisitWebSiteButton(object sender, EventArgs e)
         {
             OpenWebSite();
         }
 
-        private void logoPictureBox_Click(object sender, EventArgs e)
+        private void ClickConsolePicture(object sender, EventArgs e)
         {
             logoPictureBox.Image = _switch ? Properties.Resources.image_model1 : Properties.Resources.image_model2;
             _switch = !_switch;
         }
-
-#pragma warning restore IDE1006 // Naming Styles
     }
 }

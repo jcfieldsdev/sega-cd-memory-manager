@@ -59,7 +59,7 @@ namespace SegaCdMemoryManager
         private readonly byte[] _headerBlock;
         private int _filesUsed;
         private int _blocksFree;
-        private readonly int _fileSize;
+        private int _fileSize;
 
         public string Path { get => _path; set => _path = value; }
         public List<SaveEntry> Entries { get => _entries; }
@@ -195,8 +195,14 @@ namespace SegaCdMemoryManager
 
             CountEntries();
         }
-
+        
         private void CountEntries()
+        {
+            _filesUsed = _entries.Count;
+            _blocksFree = Math.Max(CalculateFreeSpace(_fileSize), 0);
+        }
+
+        public int CalculateFreeSpace(int fileSize)
         {
             int bytesUsed = 0;
 
@@ -207,7 +213,7 @@ namespace SegaCdMemoryManager
 
             // subtracts header and footer blocks, directory, and save files
             int directorySizeInBlocks = (int)Math.Ceiling((float)_filesUsed / 2);
-            int blocksFree = (_fileSize - bytesUsed) / (int)Format.BlockSize - directorySizeInBlocks - 2;
+            int blocksFree = (fileSize - bytesUsed) / (int)Format.BlockSize - directorySizeInBlocks - 2;
 
             // if file contains even number of entries, subtract one free block since
             // next block of data will require adding another directory block
@@ -216,8 +222,7 @@ namespace SegaCdMemoryManager
                 blocksFree--;
             }
 
-            _filesUsed = _entries.Count;
-            _blocksFree = Math.Max(blocksFree, 0);
+            return blocksFree;
         }
 
         private byte[] DecodeBlock(byte[] block)
@@ -435,8 +440,32 @@ namespace SegaCdMemoryManager
             string name = System.Text.Encoding.ASCII.GetString(data, offset, (int)RecordLength.Name);
             byte protect = data[data.Length - 1];
 
+            if (name.Length == 0 || (protect != 0x00 || protect != 0xff))
+            {
+                throw new Exception("The specified file is not a valid save entry.");
+            }
+
             var entry = new SaveEntry(name, protect, data.Take(offset).ToArray());
             AddEntry(entry);
+        }
+
+        public void Resize(int exponent)
+        {
+            if (exponent < 3 || exponent > 9)
+            {
+                throw new Exception("The specified file size is invalid.");
+            }
+
+            int fileSize = (int)Math.Pow(2, exponent) * 1024;
+
+            if (CalculateFreeSpace(fileSize) < 0)
+            {
+                throw new Exception("The specified file size is too small for the current file.");
+            }
+
+            _fileSize = fileSize;
+
+            CountEntries();
         }
     }
 }

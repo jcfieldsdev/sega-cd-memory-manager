@@ -51,14 +51,15 @@ namespace SegaCdMemoryManager
 
         private void OpenFile(int id)
         {
-            var openFileDialog = new OpenFileDialog
+            using (var openFileDialog = new OpenFileDialog
             {
                 Filter = FileFilter
-            };
-
-            if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+            })
             {
-                LoadFile(id, openFileDialog.FileName);
+                if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    LoadFile(id, openFileDialog.FileName);
+                }
             }
         }
 
@@ -128,31 +129,32 @@ namespace SegaCdMemoryManager
 
         private void SaveAs(int id)
         {
-            var saveFileDialog = new SaveFileDialog
+            try
             {
-                Filter = FileFilter
-            };
+                using (var saveFileDialog = new SaveFileDialog
+                {
+                    Filter = FileFilter
+                })
+                {
+                    if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        var bramFile = _bramFiles[id];
+                        bramFile.Path = saveFileDialog.FileName;
+                        bramFile.WriteFile();
 
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                        SetModified(id, false);
+                        Reload(id);
+                    }
+                }
+            }
+            catch (Exception error)
             {
-                try
-                {
-                    var bramFile = _bramFiles[id];
-                    bramFile.Path = saveFileDialog.FileName;
-                    bramFile.WriteFile();
-
-                    SetModified(id, false);
-                    Reload(id);
-                }
-                catch (Exception error)
-                {
-                    MessageBox.Show(
-                        error.Message,
-                        "Error",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error
-                    );
-                }
+                MessageBox.Show(
+                    error.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
             }
         }
 
@@ -252,10 +254,10 @@ namespace SegaCdMemoryManager
             toolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} blocks free";
             toolStripStatusLabelFileSize.Text = $"{bramFile.SizeInBytes:n0} bytes";
 
-            ChangeListView(id);
+            UpdateEntryButtons(id);
         }
 
-        private void ChangeListView(int id)
+        private void UpdateEntryButtons(int id)
         {
             ListView listViewEntries = null;
             ToolStripButton toolStripButtonExport = null;
@@ -265,6 +267,7 @@ namespace SegaCdMemoryManager
             ToolStripMenuItem toolStripMenuItemExport = null;
             ToolStripMenuItem toolStripMenuItemMove = null;
             ToolStripMenuItem toolStripMenuItemCopy = null;
+            ToolStripMenuItem toolStripMenuItemRename = null;
             ToolStripMenuItem toolStripMenuItemDelete = null;
 
             if (id == (int)File.Left)
@@ -277,6 +280,7 @@ namespace SegaCdMemoryManager
                 toolStripMenuItemExport = toolStripMenuItemExport1;
                 toolStripMenuItemMove = toolStripMenuItemMove1;
                 toolStripMenuItemCopy = toolStripMenuItemCopy1;
+                toolStripMenuItemRename = toolStripMenuItemRename1;
                 toolStripMenuItemDelete = toolStripMenuItemDelete1;
 
             }
@@ -290,6 +294,7 @@ namespace SegaCdMemoryManager
                 toolStripMenuItemExport = toolStripMenuItemExport2;
                 toolStripMenuItemMove = toolStripMenuItemMove2;
                 toolStripMenuItemCopy = toolStripMenuItemCopy2;
+                toolStripMenuItemRename = toolStripMenuItemRename2;
                 toolStripMenuItemDelete = toolStripMenuItemDelete2;
             }
 
@@ -301,6 +306,7 @@ namespace SegaCdMemoryManager
             toolStripMenuItemExport.Enabled = state;
             toolStripMenuItemMove.Enabled = state;
             toolStripMenuItemCopy.Enabled = state;
+            toolStripMenuItemRename.Enabled = state;
             toolStripMenuItemDelete.Enabled = state;
         }
 
@@ -325,10 +331,9 @@ namespace SegaCdMemoryManager
 
             foreach (ListViewItem listViewItem in listViewEntries.SelectedItems)
             {
-                var entry = listViewItem.Tag as SaveEntry;
-
                 try
                 {
+                    var entry = listViewItem.Tag as SaveEntry;
                     destinationBramFile.AddEntry(entry);
                     modified++;
                 }
@@ -369,11 +374,11 @@ namespace SegaCdMemoryManager
             int sourceModified = 0, destinationModified = 0;
 
             foreach (ListViewItem listViewItem in listViewEntries.SelectedItems)
-            {
-                var entry = listViewItem.Tag as SaveEntry;
-                    
+            {    
                 try
                 {
+                    var entry = listViewItem.Tag as SaveEntry;
+
                     destinationBramFile.AddEntry(entry);
                     destinationModified++;
 
@@ -398,6 +403,53 @@ namespace SegaCdMemoryManager
             Reload(destinationId);
         }
 
+        private void RenameEntry(int id)
+        {
+            ListView listViewEntries = null;
+
+            if (id == (int)File.Left)
+            {
+                listViewEntries = listViewEntries1;
+            }
+            else if (id == (int)File.Right)
+            {
+                listViewEntries = listViewEntries2;
+            }
+
+            int modified = 0;
+
+            foreach (ListViewItem listViewItem in listViewEntries.SelectedItems)
+            {
+                try
+                {
+                    var entry = listViewItem.Tag as SaveEntry;
+                    using (var renameDialog = new RenameDialog()
+                    {
+                        EntryName = entry.Name
+                    })
+                    {
+                        if (renameDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            entry.Rename(renameDialog.EntryName);
+                            modified++;
+                        }
+                    }
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(
+                        error.Message,
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                }
+            }
+
+            SetModified(id, modified > 0);
+            Reload(id);
+        }
+
         private void DeleteEntry(int id)
         {
             var bramFile = _bramFiles[id];
@@ -417,10 +469,9 @@ namespace SegaCdMemoryManager
 
             foreach (ListViewItem listViewItem in listViewEntries.SelectedItems)
             {
-                var entry = listViewItem.Tag as SaveEntry;
-
                 try
                 {
+                    var entry = listViewItem.Tag as SaveEntry;
                     bramFile.RemoveEntry(entry);
                     modified++;
                 }
@@ -444,17 +495,20 @@ namespace SegaCdMemoryManager
             try
             {
                 var bramFile = _bramFiles[id];
-                var openFileDialog = new OpenFileDialog
+                bool isModified = false;
+                using (var openFileDialog = new OpenFileDialog
                 {
                     Filter = EntryFilter
-                };
-
-                if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+                })
                 {
-                    bramFile.ImportEntry(openFileDialog.FileName);
+                    if (openFileDialog.ShowDialog(this) == DialogResult.OK)
+                    {
+                        bramFile.ImportEntry(openFileDialog.FileName);
+                        isModified = true;
+                    }
                 }
 
-                SetModified(id, true);
+                SetModified(id, isModified);
                 Reload(id);
             }
             catch (Exception error)
@@ -484,138 +538,164 @@ namespace SegaCdMemoryManager
 
             foreach (ListViewItem listViewItem in listViewEntries.SelectedItems)
             {
-                var entry = listViewItem.Tag as SaveEntry;
-                var saveFileDialog = new SaveFileDialog
+                try
                 {
-                    Filter = EntryFilter,
-                    FileName = entry.Name
-                };
-
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                    var entry = listViewItem.Tag as SaveEntry;
+                    using (var saveFileDialog = new SaveFileDialog
+                    {
+                        Filter = EntryFilter,
+                        FileName = entry.Name
+                    })
+                    {
+                        if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            entry.WriteFile(saveFileDialog.FileName);
+                        }
+                    }
+                }
+                catch (Exception error)
                 {
-                    try
-                    {
-                        entry.WriteFile(saveFileDialog.FileName);
-                    }
-                    catch (Exception error)
-                    {
-                        MessageBox.Show(
-                            error.Message,
-                            "Error",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error
-                        );
-                    }
+                    MessageBox.Show(
+                        error.Message,
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
                 }
             }
 
             Reload(id);
         }
 
-#pragma warning disable IDE1006 // Naming Styles
-
-        private void listViewEntries1_SelectedIndexChanged(object sender, EventArgs e)
+        private void ResizeFile(int id)
         {
-            ChangeListView((int)File.Left);
+            try
+            {
+                var bramFile = _bramFiles[id];
+                bool isModified = false;
+                using (var resizeDialog = new ResizeDialog
+                {
+                    Selection = (int)Math.Floor(Math.Log(bramFile.SizeInBytes / 1024, 2))
+                })
+                {
+                    if (resizeDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        bramFile.Resize(resizeDialog.Selection);
+                        isModified = true;
+                    }
+                }
+
+                SetModified(id, isModified);
+                Reload(id);
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show(
+                    error.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
         }
 
-        private void toolStripButtonNew1_Click(object sender, EventArgs e)
+        private void ChangeListView(object sender, EventArgs e)
         {
-            CloseFile((int)File.Left);
-            LoadBlankFile((int)File.Left);
+            var control = sender as ListView;
+            int tag = Convert.ToInt32(control.Tag);
+
+            UpdateEntryButtons(tag);
         }
 
-        private void toolStripButtonOpen1_Click(object sender, EventArgs e)
+        private void ClickNewButton(object sender, EventArgs e)
         {
-            CloseFile((int)File.Right);
-            OpenFile((int)File.Left);
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            CloseFile(tag);
+            LoadBlankFile(tag);
         }
 
-        private void toolStripButtonSave1_Click(object sender, EventArgs e)
+        private void ClickOpenButton(object sender, EventArgs e)
         {
-            Save((int)File.Left);
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            CloseFile(tag);
+            OpenFile(tag);
         }
 
-        private void toolStripButtonImport1_Click(object sender, EventArgs e)
+        private void ClickSaveButton(object sender, EventArgs e)
         {
-            ImportEntry((int)File.Left);
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            Save(tag);
         }
 
-        private void toolStripButtonExport1_Click(object sender, EventArgs e)
+        private void ClickImportButton(object sender, EventArgs e)
         {
-            ExportEntry((int)File.Left);
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            ImportEntry(tag);
         }
 
-        private void toolStripButtonMove1_Click(object sender, EventArgs e)
+        private void ClickExportButton(object sender, EventArgs e)
         {
-            MoveEntry((int)File.Left);
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            ExportEntry(tag);
         }
 
-        private void toolStripButtonCopy1_Click(object sender, EventArgs e)
+        private void ClickMoveButton(object sender, EventArgs e)
         {
-            CopyEntry((int)File.Left);
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            MoveEntry(tag);
         }
 
-        private void toolStripButtonDelete1_Click(object sender, EventArgs e)
+        private void ClickCopyButton(object sender, EventArgs e)
         {
-            DeleteEntry((int)File.Left);
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            CopyEntry(tag);
         }
 
-        private void listViewEntries2_SelectedIndexChanged(object sender, EventArgs e)
+        private void ClickRenameButton(object sender, EventArgs e)
         {
-            ChangeListView((int)File.Right);
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            RenameEntry(tag);
         }
 
-        private void toolStripButtonNew2_Click(object sender, EventArgs e)
+        private void ClickDeleteButton(object sender, EventArgs e)
         {
-            CloseFile((int)File.Right);
-            LoadBlankFile((int)File.Right);
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            DeleteEntry(tag);
         }
 
-        private void toolStripButtonOpen2_Click(object sender, EventArgs e)
+        private void ClickResizeButton(object sender, EventArgs e)
         {
-            CloseFile((int)File.Right);
-            OpenFile((int)File.Right);
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            ResizeFile(tag);
         }
 
-        private void toolStripButtonSave2_Click(object sender, EventArgs e)
+        private void ClickVisitWebSiteButton(object sender, EventArgs e)
         {
-            Save((int)File.Right);
-        }
-
-        private void toolStripButtonImport2_Click(object sender, EventArgs e)
-        {
-            ImportEntry((int)File.Right);
-        }
-
-        private void toolStripButtonExport2_Click(object sender, EventArgs e)
-        {
-            ExportEntry((int)File.Right);
-        }
-
-        private void toolStripButtonMove2_Click(object sender, EventArgs e)
-        {
-            MoveEntry((int)File.Right);
-        }
-
-        private void toolStripButtonCopy2_Click(object sender, EventArgs e)
-        {
-            CopyEntry((int)File.Right);
-        }
-
-        private void toolStripButtonDelete2_Click(object sender, EventArgs e)
-        {
-            DeleteEntry((int)File.Right);
-        }
-
-        private void visitWebSiteToolStripMenuItem_Click_1(object sender, EventArgs e)
-        {
-            
             var form = new AboutBox();
             form.OpenWebSite();
         }
 
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ClickAboutButton(object sender, EventArgs e)
         {
             var form = new AboutBox();
             form.ShowDialog();
@@ -626,7 +706,5 @@ namespace SegaCdMemoryManager
             CloseFile((int)File.Left);
             CloseFile((int)File.Right);
         }
-
-#pragma warning restore IDE1006 // Naming Styles
     }
 }

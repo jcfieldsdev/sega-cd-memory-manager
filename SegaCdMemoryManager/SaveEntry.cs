@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SegaCdMemoryManager
@@ -20,7 +21,7 @@ namespace SegaCdMemoryManager
             Protect = 1
         }
 
-        private readonly string _name;
+        private string _name;
         private readonly byte _protect;
         private readonly byte[] _data;
 
@@ -49,6 +50,23 @@ namespace SegaCdMemoryManager
             contents.Add(_protect);
 
             File.WriteAllBytes(path, contents.ToArray());
+        }
+
+        public void Rename(string name)
+        {
+            if (name.Length == 0 || name.Length > (int)RecordLength.Name)
+            {
+                throw new Exception("The specified entry name is not a valid length.");
+            }
+
+            var pattern = new Regex(@"[^A-Z0-9_]");
+
+            if (pattern.IsMatch(name))
+            {
+                throw new Exception("The specified entry name contains invalid characters.");
+            }
+
+            _name = name;
         }
     }
 }

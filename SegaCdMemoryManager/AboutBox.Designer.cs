@@ -73,7 +73,7 @@ namespace SegaCdMemoryManager
             this.labelWebSiteUrl.TabIndex = 25;
             this.labelWebSiteUrl.Text = "Web Site URL";
             this.labelWebSiteUrl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.labelWebSiteUrl.Click += new System.EventHandler(this.labelWebSiteUrl_Click);
+            this.labelWebSiteUrl.Click += new System.EventHandler(this.ClickVisitWebSiteButton);
             // 
             // labelProductName
             // 
@@ -123,7 +123,7 @@ namespace SegaCdMemoryManager
             this.logoPictureBox.TabIndex = 12;
             this.logoPictureBox.TabStop = false;
             this.logoPictureBox.WaitOnLoad = true;
-            this.logoPictureBox.Click += new System.EventHandler(this.logoPictureBox_Click);
+            this.logoPictureBox.Click += new System.EventHandler(this.ClickConsolePicture);
             // 
             // AboutBox
             // 
