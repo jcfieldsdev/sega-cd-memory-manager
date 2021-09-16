@@ -43,9 +43,10 @@ namespace SegaCdMemoryManager
         {
             int length = _data.Length + (int)RecordLength.Name + (int)RecordLength.Protect;
             byte[] name = Encoding.ASCII.GetBytes(_name.PadRight((int)RecordLength.Name, '\0'));
+            byte[] data = BlockEncoder.DecodeIfProtected(_data, _protect);
 
             var contents = new List<byte>(length);
-            contents.AddRange(_data);
+            contents.AddRange(data);
             contents.AddRange(name);
             contents.Add(_protect);
 

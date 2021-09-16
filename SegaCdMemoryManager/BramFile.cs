@@ -36,6 +36,12 @@ namespace SegaCdMemoryManager
             Name = 11
         }
 
+        enum ProtectState
+        {
+            Off = 0x00,
+            On = 0xff
+        }
+
         private readonly struct Record
         {
             public Record(string name, byte protect, int start, int size)
@@ -158,7 +164,7 @@ namespace SegaCdMemoryManager
             for (int i = 0; i < _filesUsed; i++)
             {
                 int blockStart = data.Length - (int)Format.BlockSize - (i + 1) * (int)Format.BlockSize;
-                byte[] block = DecodeBlock(data.Skip(blockStart).Take((int)Format.BlockSize).ToArray());
+                byte[] block = BlockEncoder.Decode(data.Skip(blockStart).Take((int)Format.BlockSize).ToArray());
 
                 // each block contains data for up to two entries
                 for (int j = 0; j < 2; j++)
@@ -230,89 +236,6 @@ namespace SegaCdMemoryManager
             return blocksFree;
         }
 
-        private byte[] DecodeBlock(byte[] block)
-        {
-            if (BitConverter.IsLittleEndian)
-            {
-                return DecodeBlockLittleEndian(block);
-            }
-            
-            return DecodeBlockBigEndian(block);
-        }
-
-        private byte[] DecodeBlockLittleEndian(byte[] block)
-        {
-            byte[] directory = new byte[(int)Format.DirectorySize + 4];
-            uint bits = 0;
-
-            for (int blockIndex = 0, directoryIndex = 0; directoryIndex < (int)Format.DirectorySize + 4; blockIndex++)
-            {
-                int shift = (blockIndex * 2) % 8;
-                bits |= (uint)((block[blockIndex] & 0x00fc) << shift);
-
-                if (shift > 0)
-                {
-                    directory[directoryIndex] = (byte)((bits & 0xff00) >> 8);
-                    directoryIndex++;
-                }
-
-                bits <<= 8;
-            }
-
-            return directory.Skip(2).Take((int)Format.DirectorySize).ToArray();
-        }
-
-        private byte[] DecodeBlockBigEndian(byte[] block)
-        {
-            byte[] directory = new byte[(int)Format.DirectorySize + 4];
-            uint bits = 0;
-
-            for (int blockIndex = 0, directoryIndex = 0; directoryIndex < (int)Format.DirectorySize + 4; blockIndex++)
-            {
-                int shift = (blockIndex * 2) % 8;
-                bits |= (uint)((block[blockIndex] & 0xfc00) << shift);
-
-                if (shift > 0)
-                {
-                    directory[directoryIndex] = (byte)((bits & 0x00ff) >> 8);
-                    directoryIndex++;
-                }
-
-                bits <<= 8;
-            }
-
-            return directory.Skip(2).Take((int)Format.DirectorySize).ToArray();
-        }
-
-        private byte[] EncodeDirectory(byte[] directory)
-        {
-
-            if (BitConverter.IsLittleEndian)
-            {
-                return EncodeDirectoryLittleEndian(directory);
-            }
-
-            return EncodeDirectoryBigEndian(directory);
-        }
-
-        private byte[] EncodeDirectoryLittleEndian(byte[] directory)
-        {
-            var contents = new List<byte>();
-            contents.AddRange(directory);
-            contents.AddRange(new byte[(int)Format.BlockSize / 2]);
-
-            return contents.ToArray();
-        }
-
-        private byte[] EncodeDirectoryBigEndian(byte[] directory)
-        {
-            var contents = new List<byte>();
-            contents.AddRange(directory);
-            contents.AddRange(new byte[(int)Format.BlockSize / 2]);
-
-            return contents.ToArray();
-        }
-
         public void WriteFile()
         {
             var records = new Record[_filesUsed];
@@ -371,7 +294,7 @@ namespace SegaCdMemoryManager
                     directory.AddRange(size);
                 }
 
-                contents.AddRange(EncodeDirectory(directory.ToArray()));
+                contents.AddRange(BlockEncoder.Encode(directory.ToArray()));
             }
 
             byte[] blocksFree = BitConverter.GetBytes((short)_blocksFree);
@@ -432,24 +355,30 @@ namespace SegaCdMemoryManager
                 throw new Exception("The specified file does not exist.");
             }
 
-            FileInfo fileInfo = new FileInfo(path);
-
-            if ((fileInfo.Length - (int)RecordLength.Name - 1) % (int)Format.BlockSize != 0)
-            {
-                throw new Exception("The specified file is not a valid save entry.");
-            }
-
             byte[] data = File.ReadAllBytes(path);
             int offset = data.Length - (int)RecordLength.Name - 1;
             string name = System.Text.Encoding.ASCII.GetString(data, offset, (int)RecordLength.Name);
             byte protect = data[data.Length - 1];
+
+            FileInfo fileInfo = new FileInfo(path);
+            long size = fileInfo.Length - (int)RecordLength.Name - 1;
+
+            if (protect == (byte)ProtectState.On && size % (int)Format.DirectorySize != 0)
+            {
+                throw new Exception("The specified file is not a valid save entry.");
+            }
+            
+            if (protect == (byte)ProtectState.Off && size % (int)Format.BlockSize != 0)
+            {
+                throw new Exception("The specified file is not a valid save entry.");
+            }
 
             if (name.Length == 0 || (protect != 0x00 && protect != 0xff))
             {
                 throw new Exception("The specified file is not a valid save entry.");
             }
 
-            var entry = new SaveEntry(name, protect, data.Take(offset).ToArray());
+            var entry = new SaveEntry(name, protect, BlockEncoder.EncodeIfProtected(data, protect));
             AddEntry(entry);
         }
 
