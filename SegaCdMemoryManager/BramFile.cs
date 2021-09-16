@@ -411,7 +411,7 @@ namespace SegaCdMemoryManager
             {
                 if (entry.Name == newEntry.Name)
                 {
-                    throw new Exception($"An entry named {newEntry.Name} already exists in this file.");
+                    throw new Exception($"An entry named {entry.Name} already exists in this file.");
                 }
             }
 
@@ -451,6 +451,19 @@ namespace SegaCdMemoryManager
 
             var entry = new SaveEntry(name, protect, data.Take(offset).ToArray());
             AddEntry(entry);
+        }
+
+        public void RenameEntry(SaveEntry renameEntry, string name)
+        {
+            foreach (var entry in _entries)
+            {
+                if (entry.Name == name)
+                {
+                    throw new Exception($"An entry named {entry.Name} already exists in this file.");
+                }
+            }
+
+            renameEntry.Rename(name);
         }
 
         public void Resize(int exponent)

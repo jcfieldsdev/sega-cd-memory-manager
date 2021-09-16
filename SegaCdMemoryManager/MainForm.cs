@@ -20,11 +20,35 @@ namespace SegaCdMemoryManager
             Right = 1
         }
 
+        private struct Editor
+        {
+            public ListView ListViewEntries { get; set; }
+            public ToolStripButton ToolStripButtonNew { get; set; }
+            public ToolStripButton ToolStripButtonOpen { get; set; }
+            public ToolStripButton ToolStripButtonSave { get; set; }
+            public ToolStripButton ToolStripButtonImport { get; set; }
+            public ToolStripButton ToolStripButtonExport { get; set; }
+            public ToolStripButton ToolStripButtonMove { get; set; }
+            public ToolStripButton ToolStripButtonCopy { get; set; }
+            public ToolStripButton ToolStripButtonDelete { get; set; }
+            public TextBox TextBoxFileName { get; set; }
+            public ToolStripStatusLabel ToolStripStatusLabelFilesUsed { get; set; }
+            public ToolStripStatusLabel ToolStripStatusLabelBlocksFree { get; set; }
+            public ToolStripStatusLabel ToolStripStatusLabelFileSize { get; set; }
+            public ToolStripStatusLabel ToolStripStatusLabelModified { get; set; }
+            public ToolStripMenuItem ToolStripMenuItemExport { get; set; }
+            public ToolStripMenuItem ToolStripMenuItemMove { get; set; }
+            public ToolStripMenuItem ToolStripMenuItemCopy { get; set; }
+            public ToolStripMenuItem ToolStripMenuItemRename { get; set; }
+            public ToolStripMenuItem ToolStripMenuItemDelete { get; set; }
+        }
+
         private const string AppTitle = "Sega CD Memory Manager";
         private const string FileFilter = "Sega CD memory file|*.brm;*crm";
         private const string EntryFilter = "Sega CD save entry file|*.srm";
 
         private readonly BramFile[] _bramFiles;
+        private readonly Editor[] _editors;
         private readonly bool[] _isModified;
 
         public MainForm(string[] args)
@@ -32,7 +56,10 @@ namespace SegaCdMemoryManager
             InitializeComponent();
 
             _bramFiles = new BramFile[(int)File.Count];
+            _editors = new Editor[(int)File.Count];
             _isModified = new bool[(int)File.Count];
+
+            InitializeEditors();
 
             if (args.Length > 1)
             {
@@ -47,6 +74,55 @@ namespace SegaCdMemoryManager
                 LoadBlankFile((int)File.Left);
                 LoadBlankFile((int)File.Right);
             }
+        }
+
+        private void InitializeEditors()
+        {
+            _editors[(int)File.Left] = new Editor
+            {
+                ListViewEntries = listViewEntries1,
+                ToolStripButtonNew = toolStripButtonNew1,
+                ToolStripButtonOpen = toolStripButtonOpen1,
+                ToolStripButtonSave = toolStripButtonSave1,
+                ToolStripButtonImport = toolStripButtonImport1,
+                ToolStripButtonExport = toolStripButtonExport1,
+                ToolStripButtonMove = toolStripButtonMove1,
+                ToolStripButtonCopy = toolStripButtonCopy1,
+                ToolStripButtonDelete = toolStripButtonDelete1,
+                TextBoxFileName = textBoxFileName1,
+                ToolStripStatusLabelFilesUsed = toolStripStatusLabelFilesUsed1,
+                ToolStripStatusLabelBlocksFree = toolStripStatusLabelBlocksFree1,
+                ToolStripStatusLabelFileSize = toolStripStatusLabelFileSize1,
+                ToolStripStatusLabelModified = toolStripStatusLabelModified1,
+                ToolStripMenuItemExport = toolStripMenuItemExport1,
+                ToolStripMenuItemMove = toolStripMenuItemMove1,
+                ToolStripMenuItemCopy = toolStripMenuItemCopy1,
+                ToolStripMenuItemRename = toolStripMenuItemRename1,
+                ToolStripMenuItemDelete = toolStripMenuItemDelete1
+            };
+
+            _editors[(int)File.Right] = new Editor
+            {
+                ListViewEntries = listViewEntries2,
+                ToolStripButtonNew = toolStripButtonNew2,
+                ToolStripButtonOpen = toolStripButtonOpen2,
+                ToolStripButtonSave = toolStripButtonSave2,
+                ToolStripButtonImport = toolStripButtonImport2,
+                ToolStripButtonExport = toolStripButtonExport2,
+                ToolStripButtonMove = toolStripButtonMove2,
+                ToolStripButtonCopy = toolStripButtonCopy2,
+                ToolStripButtonDelete = toolStripButtonDelete2,
+                TextBoxFileName = textBoxFileName2,
+                ToolStripStatusLabelFilesUsed = toolStripStatusLabelFilesUsed2,
+                ToolStripStatusLabelBlocksFree = toolStripStatusLabelBlocksFree2,
+                ToolStripStatusLabelFileSize = toolStripStatusLabelFileSize2,
+                ToolStripStatusLabelModified = toolStripStatusLabelModified2,
+                ToolStripMenuItemExport = toolStripMenuItemExport2,
+                ToolStripMenuItemMove = toolStripMenuItemMove2,
+                ToolStripMenuItemCopy = toolStripMenuItemCopy2,
+                ToolStripMenuItemRename = toolStripMenuItemRename2,
+                ToolStripMenuItemDelete = toolStripMenuItemDelete2
+            };
         }
 
         private void OpenFile(int id)
@@ -180,23 +256,8 @@ namespace SegaCdMemoryManager
 
         private void SetModified(int id, bool isModified)
         {
-            ToolStripButton toolStripButtonSave = null;
-            ToolStripStatusLabel toolStripStatusLabelModified = null;
-
-            if (id == (int)File.Left)
-            {
-                toolStripButtonSave = toolStripButtonSave1;
-                toolStripStatusLabelModified = toolStripStatusLabelModified1;
-
-            }
-            else if (id == (int)File.Right)
-            {
-                toolStripButtonSave = toolStripButtonSave2;
-                toolStripStatusLabelModified = toolStripStatusLabelModified2;
-            }
-
-            toolStripButtonSave.Enabled = isModified;
-            toolStripStatusLabelModified.Text = isModified ? "Modified" : "";
+            _editors[id].ToolStripButtonSave.Enabled = isModified;
+            _editors[id].ToolStripStatusLabelModified.Text = isModified ? "Modified" : "";
 
             _isModified[id] = isModified;
         }
@@ -210,33 +271,7 @@ namespace SegaCdMemoryManager
                 return;
             }
 
-            ListView listViewEntries = null;
-            ToolStripButton toolStripButtonSave = null;
-            TextBox textBoxFileName = null;
-            ToolStripStatusLabel toolStripStatusLabelFilesUsed = null;
-            ToolStripStatusLabel toolStripStatusLabelBlocksFree = null;
-            ToolStripStatusLabel toolStripStatusLabelFileSize = null;
-
-            if (id == (int)File.Left)
-            {
-                listViewEntries = listViewEntries1;
-                toolStripButtonSave = toolStripButtonSave1;
-                textBoxFileName = textBoxFileName1;
-                toolStripStatusLabelFilesUsed = toolStripStatusLabelFilesUsed1;
-                toolStripStatusLabelBlocksFree = toolStripStatusLabelBlocksFree1;
-                toolStripStatusLabelFileSize = toolStripStatusLabelFileSize1;
-            }
-            else if (id == (int)File.Right)
-            {
-                listViewEntries = listViewEntries2;
-                toolStripButtonSave = toolStripButtonSave2;
-                textBoxFileName = textBoxFileName2;
-                toolStripStatusLabelFilesUsed = toolStripStatusLabelFilesUsed2;
-                toolStripStatusLabelBlocksFree = toolStripStatusLabelBlocksFree2;
-                toolStripStatusLabelFileSize = toolStripStatusLabelFileSize2;
-            }
-
-            listViewEntries.Items.Clear();
+            _editors[id].ListViewEntries.Items.Clear();
 
             foreach (var entry in bramFile.Entries)
             {
@@ -245,69 +280,30 @@ namespace SegaCdMemoryManager
                 {
                     Tag = entry
                 };
-                listViewEntries.Items.Add(listViewItem);
+                _editors[id].ListViewEntries.Items.Add(listViewItem);
             }
 
-            toolStripButtonSave.Enabled = _isModified[id];
-            textBoxFileName.Text = Path.GetFileName(bramFile.Path);
-            toolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} files";
-            toolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} blocks free";
-            toolStripStatusLabelFileSize.Text = $"{bramFile.SizeInBytes:n0} bytes";
+            _editors[id].ToolStripButtonSave.Enabled = _isModified[id];
+            _editors[id].TextBoxFileName.Text = Path.GetFileName(bramFile.Path);
+            _editors[id].ToolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} files";
+            _editors[id].ToolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} blocks free";
+            _editors[id].ToolStripStatusLabelFileSize.Text = $"{bramFile.SizeInBytes:n0} bytes";
 
             UpdateEntryButtons(id);
         }
 
         private void UpdateEntryButtons(int id)
         {
-            ListView listViewEntries = null;
-            ToolStripButton toolStripButtonExport = null;
-            ToolStripButton toolStripButtonMove = null;
-            ToolStripButton toolStripButtonCopy = null;
-            ToolStripButton toolStripButtonDelete = null;
-            ToolStripMenuItem toolStripMenuItemExport = null;
-            ToolStripMenuItem toolStripMenuItemMove = null;
-            ToolStripMenuItem toolStripMenuItemCopy = null;
-            ToolStripMenuItem toolStripMenuItemRename = null;
-            ToolStripMenuItem toolStripMenuItemDelete = null;
-
-            if (id == (int)File.Left)
-            {
-                listViewEntries = listViewEntries1;
-                toolStripButtonExport = toolStripButtonExport1;
-                toolStripButtonMove = toolStripButtonMove1;
-                toolStripButtonCopy = toolStripButtonCopy1;
-                toolStripButtonDelete = toolStripButtonDelete1;
-                toolStripMenuItemExport = toolStripMenuItemExport1;
-                toolStripMenuItemMove = toolStripMenuItemMove1;
-                toolStripMenuItemCopy = toolStripMenuItemCopy1;
-                toolStripMenuItemRename = toolStripMenuItemRename1;
-                toolStripMenuItemDelete = toolStripMenuItemDelete1;
-
-            }
-            else if (id == (int)File.Right)
-            {
-                listViewEntries = listViewEntries2;
-                toolStripButtonExport = toolStripButtonExport2;
-                toolStripButtonMove = toolStripButtonMove2;
-                toolStripButtonCopy = toolStripButtonCopy2;
-                toolStripButtonDelete = toolStripButtonDelete2;
-                toolStripMenuItemExport = toolStripMenuItemExport2;
-                toolStripMenuItemMove = toolStripMenuItemMove2;
-                toolStripMenuItemCopy = toolStripMenuItemCopy2;
-                toolStripMenuItemRename = toolStripMenuItemRename2;
-                toolStripMenuItemDelete = toolStripMenuItemDelete2;
-            }
-
-            bool state = listViewEntries.SelectedIndices.Count > 0;
-            toolStripButtonExport.Enabled = state;
-            toolStripButtonMove.Enabled = state;
-            toolStripButtonCopy.Enabled = state;
-            toolStripButtonDelete.Enabled = state;
-            toolStripMenuItemExport.Enabled = state;
-            toolStripMenuItemMove.Enabled = state;
-            toolStripMenuItemCopy.Enabled = state;
-            toolStripMenuItemRename.Enabled = state;
-            toolStripMenuItemDelete.Enabled = state;
+            bool state = _editors[id].ListViewEntries.SelectedIndices.Count > 0;
+            _editors[id].ToolStripButtonExport.Enabled = state;
+            _editors[id].ToolStripButtonMove.Enabled = state;
+            _editors[id].ToolStripButtonCopy.Enabled = state;
+            _editors[id].ToolStripButtonDelete.Enabled = state;
+            _editors[id].ToolStripMenuItemExport.Enabled = state;
+            _editors[id].ToolStripMenuItemMove.Enabled = state;
+            _editors[id].ToolStripMenuItemCopy.Enabled = state;
+            _editors[id].ToolStripMenuItemRename.Enabled = state;
+            _editors[id].ToolStripMenuItemDelete.Enabled = state;
         }
 
         private void CopyEntry(int sourceId)
@@ -315,21 +311,9 @@ namespace SegaCdMemoryManager
             int destinationId = sourceId == (int)File.Left ? (int)File.Right : (int)File.Left;
             var destinationBramFile = _bramFiles[destinationId];
 
-            ListView listViewEntries = null;
-
-            if (sourceId == (int)File.Left)
-            {
-                listViewEntries = listViewEntries1;
-
-            }
-            else if (sourceId == (int)File.Right)
-            {
-                listViewEntries = listViewEntries2;
-            }
-
             int modified = 0;
 
-            foreach (ListViewItem listViewItem in listViewEntries.SelectedItems)
+            foreach (ListViewItem listViewItem in _editors[sourceId].ListViewEntries.SelectedItems)
             {
                 try
                 {
@@ -359,21 +343,9 @@ namespace SegaCdMemoryManager
             int destinationId = sourceId == (int)File.Left ? (int)File.Right : (int)File.Left;
             var destinationBramFile = _bramFiles[destinationId];
 
-            ListView listViewEntries = null;
-
-            if (sourceId == (int)File.Left)
-            {
-                listViewEntries = listViewEntries1;
-
-            }
-            else if (sourceId == (int)File.Right)
-            {
-                listViewEntries = listViewEntries2;
-            }
-
             int sourceModified = 0, destinationModified = 0;
 
-            foreach (ListViewItem listViewItem in listViewEntries.SelectedItems)
+            foreach (ListViewItem listViewItem in _editors[sourceId].ListViewEntries.SelectedItems)
             {    
                 try
                 {
@@ -405,20 +377,10 @@ namespace SegaCdMemoryManager
 
         private void RenameEntry(int id)
         {
-            ListView listViewEntries = null;
-
-            if (id == (int)File.Left)
-            {
-                listViewEntries = listViewEntries1;
-            }
-            else if (id == (int)File.Right)
-            {
-                listViewEntries = listViewEntries2;
-            }
-
+            var bramFile = _bramFiles[id];
             int modified = 0;
 
-            foreach (ListViewItem listViewItem in listViewEntries.SelectedItems)
+            foreach (ListViewItem listViewItem in _editors[id].ListViewEntries.SelectedItems)
             {
                 try
                 {
@@ -430,7 +392,7 @@ namespace SegaCdMemoryManager
                     {
                         if (renameDialog.ShowDialog() == DialogResult.OK)
                         {
-                            entry.Rename(renameDialog.EntryName);
+                            bramFile.RenameEntry(entry, renameDialog.EntryName);
                             modified++;
                         }
                     }
@@ -453,21 +415,9 @@ namespace SegaCdMemoryManager
         private void DeleteEntry(int id)
         {
             var bramFile = _bramFiles[id];
-            ListView listViewEntries = null;
-
-            if (id == (int)File.Left)
-            {
-                listViewEntries = listViewEntries1;
-
-            }
-            else if (id == (int)File.Right)
-            {
-                listViewEntries = listViewEntries2;
-            }
-
             int modified = 0;
 
-            foreach (ListViewItem listViewItem in listViewEntries.SelectedItems)
+            foreach (ListViewItem listViewItem in _editors[id].ListViewEntries.SelectedItems)
             {
                 try
                 {
@@ -524,19 +474,7 @@ namespace SegaCdMemoryManager
 
         private void ExportEntry(int id)
         {
-            ListView listViewEntries = null;
-
-            if (id == (int)File.Left)
-            {
-                listViewEntries = listViewEntries1;
-
-            }
-            else if (id == (int)File.Right)
-            {
-                listViewEntries = listViewEntries2;
-            }
-
-            foreach (ListViewItem listViewItem in listViewEntries.SelectedItems)
+            foreach (ListViewItem listViewItem in _editors[id].ListViewEntries.SelectedItems)
             {
                 try
                 {
