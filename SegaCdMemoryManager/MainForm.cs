@@ -290,7 +290,8 @@ namespace SegaCdMemoryManager
                 return;
             }
 
-            _editors[id].ListViewEntries.Items.Clear();
+            var editor = _editors[id];
+            editor.ListViewEntries.Items.Clear();
 
             foreach (var entry in bramFile.Entries)
             {
@@ -299,30 +300,31 @@ namespace SegaCdMemoryManager
                 {
                     Tag = entry
                 };
-                _editors[id].ListViewEntries.Items.Add(listViewItem);
+                editor.ListViewEntries.Items.Add(listViewItem);
             }
 
-            _editors[id].ToolStripButtonSave.Enabled = _isModified[id];
-            _editors[id].TextBoxFileName.Text = Path.GetFileName(bramFile.Path);
-            _editors[id].ToolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} files";
-            _editors[id].ToolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} blocks free";
-            _editors[id].ToolStripStatusLabelFileSize.Text = $"{bramFile.SizeInBytes:n0} bytes";
+            editor.ToolStripButtonSave.Enabled = _isModified[id];
+            editor.TextBoxFileName.Text = Path.GetFileName(bramFile.Path);
+            editor.ToolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} files";
+            editor.ToolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} blocks free";
+            editor.ToolStripStatusLabelFileSize.Text = $"{bramFile.SizeInBytes:n0} bytes";
 
             UpdateEntryButtons(id);
         }
 
         private void UpdateEntryButtons(int id)
         {
-            bool state = _editors[id].ListViewEntries.SelectedIndices.Count > 0;
-            _editors[id].ToolStripButtonExport.Enabled = state;
-            _editors[id].ToolStripButtonMove.Enabled = state;
-            _editors[id].ToolStripButtonCopy.Enabled = state;
-            _editors[id].ToolStripButtonDelete.Enabled = state;
-            _editors[id].ToolStripMenuItemExport.Enabled = state;
-            _editors[id].ToolStripMenuItemMove.Enabled = state;
-            _editors[id].ToolStripMenuItemCopy.Enabled = state;
-            _editors[id].ToolStripMenuItemRename.Enabled = state;
-            _editors[id].ToolStripMenuItemDelete.Enabled = state;
+            var editor = _editors[id];
+            bool state = editor.ListViewEntries.SelectedIndices.Count > 0;
+            editor.ToolStripButtonExport.Enabled = state;
+            editor.ToolStripButtonMove.Enabled = state;
+            editor.ToolStripButtonCopy.Enabled = state;
+            editor.ToolStripButtonDelete.Enabled = state;
+            editor.ToolStripMenuItemExport.Enabled = state;
+            editor.ToolStripMenuItemMove.Enabled = state;
+            editor.ToolStripMenuItemCopy.Enabled = state;
+            editor.ToolStripMenuItemRename.Enabled = state;
+            editor.ToolStripMenuItemDelete.Enabled = state;
         }
 
         private void CopyEntry(int sourceId)
