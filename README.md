@@ -22,7 +22,7 @@ Uses Sega CD pictures by [Evan-Amos](https://commons.wikimedia.org/wiki/User:Ev
 
 ## License
 
-- [ISC license](https://opensource.org/licenses/ISC)
+- [GNU General Public License, version 3](https://opensource.org/licenses/GPL-3.0)
 
 ## See also
 
