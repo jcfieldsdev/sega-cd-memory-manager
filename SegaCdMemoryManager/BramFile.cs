@@ -221,7 +221,7 @@ namespace SegaCdMemoryManager
         private void CountEntries()
         {
             _filesUsed = _entries.Count;
-            _blocksFree = Math.Max(CalculateFreeSpace(_fileSize), 0);
+            _blocksFree = Math.Max(0, CalculateFreeSpace(_fileSize));
         }
 
         public int CalculateFreeSpace(int fileSize)

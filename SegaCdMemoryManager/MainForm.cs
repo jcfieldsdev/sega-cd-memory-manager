@@ -318,8 +318,8 @@ namespace SegaCdMemoryManager
 
             editor.ToolStripButtonSave.Enabled = _isModified[id];
             editor.TextBoxFileName.Text = Path.GetFileName(bramFile.Path);
-            editor.ToolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} files";
-            editor.ToolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} blocks free";
+            editor.ToolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} {(bramFile.FilesUsed == 1 ? "file" : "files")}";
+            editor.ToolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} {(bramFile.BlocksFree == 1 ? "block" : "blocks")} free";
             editor.ToolStripStatusLabelFileSize.Text = $"{bramFile.SizeInBytes:n0} bytes";
 
             UpdateEntryButtons(id);
@@ -338,6 +338,11 @@ namespace SegaCdMemoryManager
             editor.ToolStripMenuItemCopy.Enabled = state;
             editor.ToolStripMenuItemRename.Enabled = state;
             editor.ToolStripMenuItemDelete.Enabled = state;
+
+            var selectedIndices = editor.ListViewEntries.SelectedIndices;
+            int totalItems = editor.ListViewEntries.Items.Count - 1;
+            editor.ToolStripMenuItemMoveUp.Enabled = state && selectedIndices[0] > 0;
+            editor.ToolStripMenuItemMoveDown.Enabled = state && selectedIndices[selectedIndices.Count - 1] < totalItems;
         }
 
         private void CopyEntry(int sourceId)
@@ -484,9 +489,9 @@ namespace SegaCdMemoryManager
         {
             var bramFile = _bramFiles[id];
             var selectionList = new List<int>();
-            var selectedIndices = _editors[id].ListViewEntries.SelectedIndices.Cast<int>().ToList();
             int modified = 0;
 
+            var selectedIndices = _editors[id].ListViewEntries.SelectedIndices.Cast<int>().ToList();
             selectedIndices.Reverse();
 
             foreach (int index in selectedIndices)
@@ -527,8 +532,18 @@ namespace SegaCdMemoryManager
                 try
                 {
                     var entry = listViewItem.Tag as SaveEntry;
-                    bramFile.RemoveEntry(entry);
-                    modified++;
+                    var dialogResult = MessageBox.Show(
+                        $"Are you sure you want to delete the entry {entry.Name}?",
+                        AppTitle,
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Warning
+                    );
+
+                    if (dialogResult == DialogResult.Yes)
+                    {
+                        bramFile.RemoveEntry(entry);
+                        modified++;
+                    }
                 }
                 catch (Exception error)
                 {
