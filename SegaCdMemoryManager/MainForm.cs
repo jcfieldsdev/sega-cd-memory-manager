@@ -55,11 +55,15 @@ namespace SegaCdMemoryManager
             public ToolStripStatusLabel ToolStripStatusLabelBlocksFree { get; set; }
             public ToolStripStatusLabel ToolStripStatusLabelFileSize { get; set; }
             public ToolStripStatusLabel ToolStripStatusLabelModified { get; set; }
+            public ToolStripMenuItem ToolStripMenuItemImport { get; set; }
             public ToolStripMenuItem ToolStripMenuItemExport { get; set; }
+            public ToolStripMenuItem ToolStripMenuItemMoveUp { get; set; }
+            public ToolStripMenuItem ToolStripMenuItemMoveDown { get; set; }
             public ToolStripMenuItem ToolStripMenuItemMove { get; set; }
             public ToolStripMenuItem ToolStripMenuItemCopy { get; set; }
             public ToolStripMenuItem ToolStripMenuItemRename { get; set; }
             public ToolStripMenuItem ToolStripMenuItemDelete { get; set; }
+            public ToolStripMenuItem ToolStripMenuItemResize { get; set; }
         }
 
         private const string AppTitle = "Sega CD Memory Manager";
@@ -113,11 +117,15 @@ namespace SegaCdMemoryManager
                 ToolStripStatusLabelBlocksFree = toolStripStatusLabelBlocksFree1,
                 ToolStripStatusLabelFileSize = toolStripStatusLabelFileSize1,
                 ToolStripStatusLabelModified = toolStripStatusLabelModified1,
+                ToolStripMenuItemImport = toolStripMenuItemImport1,
                 ToolStripMenuItemExport = toolStripMenuItemExport1,
+                ToolStripMenuItemMoveUp = toolStripMenuItemMoveUp1,
+                ToolStripMenuItemMoveDown = toolStripMenuItemMoveDown1,
                 ToolStripMenuItemMove = toolStripMenuItemMove1,
                 ToolStripMenuItemCopy = toolStripMenuItemCopy1,
                 ToolStripMenuItemRename = toolStripMenuItemRename1,
-                ToolStripMenuItemDelete = toolStripMenuItemDelete1
+                ToolStripMenuItemDelete = toolStripMenuItemDelete1,
+                ToolStripMenuItemResize = toolStripMenuItemResize1
             };
 
             _editors[(int)File.Right] = new Editor
@@ -136,11 +144,15 @@ namespace SegaCdMemoryManager
                 ToolStripStatusLabelBlocksFree = toolStripStatusLabelBlocksFree2,
                 ToolStripStatusLabelFileSize = toolStripStatusLabelFileSize2,
                 ToolStripStatusLabelModified = toolStripStatusLabelModified2,
+                ToolStripMenuItemImport = toolStripMenuItemImport2,
                 ToolStripMenuItemExport = toolStripMenuItemExport2,
+                ToolStripMenuItemMoveUp = toolStripMenuItemMoveUp2,
+                ToolStripMenuItemMoveDown = toolStripMenuItemMoveDown2,
                 ToolStripMenuItemMove = toolStripMenuItemMove2,
                 ToolStripMenuItemCopy = toolStripMenuItemCopy2,
                 ToolStripMenuItemRename = toolStripMenuItemRename2,
-                ToolStripMenuItemDelete = toolStripMenuItemDelete2
+                ToolStripMenuItemDelete = toolStripMenuItemDelete2,
+                ToolStripMenuItemResize = toolStripMenuItemResize2
             };
         }
 
@@ -275,8 +287,9 @@ namespace SegaCdMemoryManager
 
         private void SetModified(int id, bool isModified)
         {
-            _editors[id].ToolStripButtonSave.Enabled = isModified;
-            _editors[id].ToolStripStatusLabelModified.Text = isModified ? "Modified" : "";
+            var editor = _editors[id];
+            editor.ToolStripButtonSave.Enabled = isModified;
+            editor.ToolStripStatusLabelModified.Text = isModified ? "Modified" : "";
 
             _isModified[id] = isModified;
         }
@@ -431,6 +444,77 @@ namespace SegaCdMemoryManager
 
             SetModified(id, modified > 0);
             Reload(id);
+        }
+
+        private void MoveUpEntry(int id)
+        {
+            var bramFile = _bramFiles[id];
+            var selectionList = new List<int>();
+            int modified = 0;
+
+            foreach (int index in _editors[id].ListViewEntries.SelectedIndices)
+            {
+                try
+                {
+                    bramFile.MoveUpEntry(index);
+                    selectionList.Add(Math.Max(0, index - 1));
+                    modified++;
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(
+                        error.Message,
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                }
+            }
+
+            SetModified(id, modified > 0);
+            Reload(id);
+
+            foreach (int index in selectionList)
+            {
+                _editors[id].ListViewEntries.Items[index].Selected = true;
+            }
+        }
+
+        private void MoveDownEntry(int id)
+        {
+            var bramFile = _bramFiles[id];
+            var selectionList = new List<int>();
+            var selectedIndices = _editors[id].ListViewEntries.SelectedIndices.Cast<int>().ToList();
+            int modified = 0;
+
+            selectedIndices.Reverse();
+
+            foreach (int index in selectedIndices)
+            {
+                try
+                {
+                    bramFile.MoveDownEntry(index);
+                    selectionList.Add(Math.Min(bramFile.FilesUsed - 1, index + 1));
+                    modified++;
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(
+                        error.Message,
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                }
+            }
+
+            SetModified(id, modified > 0);
+            Reload(id);
+
+            foreach (int index in selectionList)
+            {
+                _editors[id].ListViewEntries.Items[index].Selected = true;
+            }
         }
 
         private void DeleteEntry(int id)
@@ -630,6 +714,22 @@ namespace SegaCdMemoryManager
             int tag = Convert.ToInt32(control.Tag);
 
             RenameEntry(tag);
+        }
+
+        private void ClickMoveUpButton(object sender, EventArgs e)
+        {
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            MoveUpEntry(tag);
+        }
+
+        private void ClickMoveDownButton(object sender, EventArgs e)
+        {
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            MoveDownEntry(tag);
         }
 
         private void ClickDeleteButton(object sender, EventArgs e)

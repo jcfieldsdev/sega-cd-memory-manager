@@ -8,6 +8,8 @@ A program for managing save files for the Sega CD/Mega CD. Written in C# using
 
 Binary versions are available on the [Releases](https://gitlab.com/jcfields/sega-cd-memory-manager/-/releases) page.
 
+Requires .NET Framework 4.7.2 or higher to be installed.
+
 ## Acknowledgments
 
 Sega CD file system format derived from [scdbrm](https://sourceforge.net/p/scdtools/code/HEAD/tree/scdbrm) by [Brian Van Buren](https://sourceforge.net/u/bgvanbur/profile/).

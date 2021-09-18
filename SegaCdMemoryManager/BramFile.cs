@@ -61,20 +61,12 @@ namespace SegaCdMemoryManager
             On = 0xff
         }
 
-        private readonly struct Record
+        private  struct Record
         {
-            public Record(string name, byte protect, int start, int size)
-            {
-                Name = name;
-                Protect = protect;
-                Start = start;
-                SizeInBlocks = size;
-            }
-
-            public string Name { get; }
-            public byte Protect { get; }
-            public int Start { get; }
-            public int SizeInBlocks { get; }
+            public string Name { get; set;  }
+            public byte Protect { get; set;  }
+            public int Start { get; set;  }
+            public int SizeInBlocks { get; set;  }
         }
 
         private const string Identifier = "SEGA_CD_ROM\x00\x01\x00\x00\x00RAM_CARTRIDGE___";
@@ -234,14 +226,8 @@ namespace SegaCdMemoryManager
 
         public int CalculateFreeSpace(int fileSize)
         {
-            int bytesUsed = 0;
-
-            foreach (var entry in _entries)
-            {
-                bytesUsed += entry.SizeInBytes;
-            }
-
-            // subtracts header and footer blocks, directory, and save files
+            // subtracts save files, directory, and header and footer blocks
+            int bytesUsed = _entries.Select(entry => entry.SizeInBytes).Sum();
             int directorySizeInBlocks = (int)Math.Ceiling((float)_filesUsed / 2);
             int blocksFree = (fileSize - bytesUsed) / (int)Format.BlockSize - directorySizeInBlocks - 2;
 
@@ -269,7 +255,14 @@ namespace SegaCdMemoryManager
             for (int i = 0; i < _entries.Count; i++)
             {
                 var entry = _entries[i];
-                var record = new Record(entry.Name, entry.Protect, bytesUsed + 1, entry.SizeInBlocks);
+                var record = new Record
+                {
+                    Name = entry.Name,
+                    Protect = entry.Protect,
+                    Start = bytesUsed + 1,
+                    SizeInBlocks = entry.SizeInBlocks
+                };
+
                 records[i] = record;
                 bytesUsed += entry.SizeInBytes;
 
@@ -349,21 +342,19 @@ namespace SegaCdMemoryManager
                 throw new Exception($"Not enough remaining space to add the entry {newEntry.Name}.");
             }
 
-            foreach (var entry in _entries)
+            
+            if (_entries.Exists(entry => entry.Name == newEntry.Name))
             {
-                if (entry.Name == newEntry.Name)
-                {
-                    throw new Exception($"An entry named {entry.Name} already exists in this file.");
-                }
+                throw new Exception($"An entry named {newEntry.Name} already exists in this file.");
             }
 
             _entries.Add(newEntry);
             CountEntries();
         }
 
-        public void RemoveEntry(SaveEntry entry)
+        public void RemoveEntry(SaveEntry removeEntry)
         {
-            _entries.Remove(entry);
+            _entries.Remove(removeEntry);
             CountEntries();
         }
 
@@ -403,15 +394,36 @@ namespace SegaCdMemoryManager
 
         public void RenameEntry(SaveEntry renameEntry, string name)
         {
-            foreach (var entry in _entries)
+            if (_entries.Exists(entry => entry.Name == renameEntry.Name))
             {
-                if (entry.Name == name)
-                {
-                    throw new Exception($"An entry named {entry.Name} already exists in this file.");
-                }
+                throw new Exception($"An entry named {renameEntry.Name} already exists in this file.");
             }
 
             renameEntry.Rename(name);
+        }
+
+        public void MoveUpEntry(int index)
+        {
+            if (index <= 0)
+            {
+                return;
+            }
+
+            SaveEntry entry = _entries[index];
+            _entries.RemoveAt(index);
+            _entries.Insert(index - 1, entry);
+        }
+
+        public void MoveDownEntry(int index)
+        {
+            if (index >= _entries.Count - 1)
+            {
+                return;
+            }
+
+            SaveEntry entry = _entries[index];
+            _entries.RemoveAt(index);
+            _entries.Insert(index + 1, entry);
         }
 
         public void Resize(int exponent)
