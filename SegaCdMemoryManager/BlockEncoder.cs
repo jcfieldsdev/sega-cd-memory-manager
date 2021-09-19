@@ -60,11 +60,11 @@ namespace SegaCdMemoryManager
 
         private static byte[] DecodeLittleEndian(byte[] encoded)
         {
-            int size = encoded.Length / 2;
-            byte[] decoded = new byte[size + 4];
+            int size = encoded.Length / 2 + 2;
+            byte[] decoded = new byte[size];
             uint bits = 0;
 
-            for (int encodedIndex = 0, decodedIndex = 0; decodedIndex < size + 4; encodedIndex++)
+            for (int encodedIndex = 0, decodedIndex = 0; decodedIndex < size; encodedIndex++)
             {
                 int shift = (encodedIndex * 2) % 8;
                 bits |= (uint)((encoded[encodedIndex] & 0x00fc) << shift);
@@ -83,11 +83,11 @@ namespace SegaCdMemoryManager
 
         private static byte[] DecodeBigEndian(byte[] encoded)
         {
-            int size = encoded.Length / 2;
-            byte[] decoded = new byte[size + 4];
+            int size = encoded.Length / 2 + 2;
+            byte[] decoded = new byte[size];
             uint bits = 0;
 
-            for (int encodedIndex = 0, decodedIndex = 0; decodedIndex < size + 4; encodedIndex++)
+            for (int encodedIndex = 0, decodedIndex = 0; decodedIndex < size; encodedIndex++)
             {
                 int shift = (encodedIndex * 2) % 8;
                 bits |= (uint)((encoded[encodedIndex] & 0xfc00) << shift);

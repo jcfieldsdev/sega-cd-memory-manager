@@ -335,26 +335,26 @@ namespace SegaCdMemoryManager
             File.WriteAllBytes(_path, contents.ToArray());
         }
 
-        public void AddEntry(SaveEntry newEntry)
+        public void AddEntry(SaveEntry entryToAdd)
         {
-            if (_blocksFree < newEntry.SizeInBlocks)
+            if (_blocksFree < entryToAdd.SizeInBlocks)
             {
-                throw new Exception($"Not enough remaining space to add the entry {newEntry.Name}.");
+                throw new Exception($"Not enough remaining space to add the entry {entryToAdd.Name}.");
             }
 
             
-            if (_entries.Exists(entry => entry.Name == newEntry.Name))
+            if (_entries.Exists(entry => entry.Name == entryToAdd.Name))
             {
-                throw new Exception($"An entry named {newEntry.Name} already exists in this file.");
+                throw new Exception($"An entry named {entryToAdd.Name} already exists in this file.");
             }
 
-            _entries.Add(newEntry);
+            _entries.Add(entryToAdd);
             CountEntries();
         }
 
-        public void RemoveEntry(SaveEntry removeEntry)
+        public void RemoveEntry(SaveEntry entryToRemove)
         {
-            _entries.Remove(removeEntry);
+            _entries.Remove(entryToRemove);
             CountEntries();
         }
 
@@ -392,14 +392,14 @@ namespace SegaCdMemoryManager
             AddEntry(entry);
         }
 
-        public void RenameEntry(SaveEntry renameEntry, string name)
+        public void RenameEntry(SaveEntry entryToRename, string name)
         {
-            if (_entries.Exists(entry => entry.Name == renameEntry.Name))
+            if (_entries.Exists(entry => entry.Name == entryToRename.Name))
             {
-                throw new Exception($"An entry named {renameEntry.Name} already exists in this file.");
+                throw new Exception($"An entry named {entryToRename.Name} already exists in this file.");
             }
 
-            renameEntry.Rename(name);
+            entryToRename.Rename(name);
         }
 
         public void MoveUpEntry(int index)
@@ -428,6 +428,7 @@ namespace SegaCdMemoryManager
 
         public void Resize(int exponent)
         {
+            // valid file sizes are between 8 and 512 KB
             if (exponent < 3 || exponent > 9)
             {
                 throw new Exception("The specified file size is invalid.");

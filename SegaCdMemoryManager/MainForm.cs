@@ -454,7 +454,7 @@ namespace SegaCdMemoryManager
         private void MoveUpEntry(int id)
         {
             var bramFile = _bramFiles[id];
-            var selectionList = new List<int>();
+            var selectedIndices = new List<int>();
             int modified = 0;
 
             foreach (int index in _editors[id].ListViewEntries.SelectedIndices)
@@ -462,7 +462,7 @@ namespace SegaCdMemoryManager
                 try
                 {
                     bramFile.MoveUpEntry(index);
-                    selectionList.Add(Math.Max(0, index - 1));
+                    selectedIndices.Add(Math.Max(0, index - 1));
                     modified++;
                 }
                 catch (Exception error)
@@ -479,7 +479,8 @@ namespace SegaCdMemoryManager
             SetModified(id, modified > 0);
             Reload(id);
 
-            foreach (int index in selectionList)
+            // re-selects rows after reloading listview
+            foreach (int index in selectedIndices)
             {
                 _editors[id].ListViewEntries.Items[index].Selected = true;
             }
@@ -488,18 +489,18 @@ namespace SegaCdMemoryManager
         private void MoveDownEntry(int id)
         {
             var bramFile = _bramFiles[id];
-            var selectionList = new List<int>();
+            var selectedIndices = new List<int>();
             int modified = 0;
 
-            var selectedIndices = _editors[id].ListViewEntries.SelectedIndices.Cast<int>().ToList();
-            selectedIndices.Reverse();
+            int count = _editors[id].ListViewEntries.SelectedIndices.Count;
 
-            foreach (int index in selectedIndices)
+            for (int i = 0; i < count; i++)
             {
                 try
                 {
+                    int index = count - i - 1;
                     bramFile.MoveDownEntry(index);
-                    selectionList.Add(Math.Min(bramFile.FilesUsed - 1, index + 1));
+                    selectedIndices.Add(Math.Min(bramFile.FilesUsed - 1, index + 1));
                     modified++;
                 }
                 catch (Exception error)
@@ -516,7 +517,8 @@ namespace SegaCdMemoryManager
             SetModified(id, modified > 0);
             Reload(id);
 
-            foreach (int index in selectionList)
+            // re-selects rows after reloading listview
+            foreach (int index in selectedIndices)
             {
                 _editors[id].ListViewEntries.Items[index].Selected = true;
             }
