@@ -178,10 +178,4 @@
   <data name="icon_save2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\icon-save2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="image_model1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\image-model1.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="image_model2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\image-model2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
 </root>
