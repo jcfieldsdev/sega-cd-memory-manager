@@ -222,10 +222,10 @@ namespace SegaCdMemoryManager
         private void CountEntries()
         {
             _filesUsed = _entries.Count;
-            _blocksFree = Math.Max(0, CalculateFreeSpace(_fileSize));
+            _blocksFree = Math.Max(0, CalculateFreeBlocks(_fileSize));
         }
 
-        public int CalculateFreeSpace(int fileSize)
+        public int CalculateFreeBlocks(int fileSize)
         {
             // subtracts save files, directory, and header and footer blocks
             int bytesUsed = _entries.Select(entry => entry.SizeInBytes).Sum();
@@ -378,12 +378,12 @@ namespace SegaCdMemoryManager
             FileInfo fileInfo = new FileInfo(path);
             long size = fileInfo.Length - (int)RecordLength.Name - 1;
 
-            if (protect == true && size % (int)Format.ProtectSize != 0)
+            if (protect && size % (int)Format.ProtectSize != 0)
             {
                 throw new Exception("The specified file is not a valid save entry.");
             }
             
-            if (protect == false && size % (int)Format.BlockSize != 0)
+            if (!protect && size % (int)Format.BlockSize != 0)
             {
                 throw new Exception("The specified file is not a valid save entry.");
             }
@@ -399,12 +399,25 @@ namespace SegaCdMemoryManager
 
         public void RenameEntry(SaveEntry entryToRename, string name)
         {
-            if (_entries.Exists(entry => entry.Name == entryToRename.Name))
+            if (_entries.Exists(entry => entry.Name == name))
             {
                 throw new Exception($"An entry named {entryToRename.Name} already exists in this file.");
             }
 
             entryToRename.Rename(name);
+        }
+
+        public void ProtectEntry(SaveEntry entryToProtect)
+        {
+            bool protect = !entryToProtect.Protect;
+
+            // protected entries use twice as much space
+            if (protect && CalculateFreeBlocks(_fileSize) < entryToProtect.SizeInBlocks)
+            {
+                throw new Exception($"Not enough free space remaining in file to protect the entry {entryToProtect.Name}.");
+            }
+
+            entryToProtect.Protect = protect;
         }
 
         public void MoveUpEntry(int index)
@@ -441,7 +454,7 @@ namespace SegaCdMemoryManager
 
             int fileSize = (int)Math.Pow(2, exponent) * 1024;
 
-            if (CalculateFreeSpace(fileSize) < 0)
+            if (CalculateFreeBlocks(fileSize) < 0)
             {
                 throw new Exception("The specified file size is too small for the current file.");
             }

@@ -44,7 +44,7 @@ namespace SegaCdMemoryManager
 
         public static byte[] DecodeIfProtected(byte[] data, bool protect)
         {
-            if (protect == true)
+            if (protect)
             {
                 return Decode(data);
             }
@@ -111,7 +111,7 @@ namespace SegaCdMemoryManager
 
         public static byte[] EncodeIfProtected(byte[] data, bool protect)
         {
-            if (protect == false)
+            if (!protect)
             {
                 return Encode(data);
             }

@@ -59,6 +59,7 @@ namespace SegaCdMemoryManager
             public ToolStripMenuItem ToolStripMenuItemExport { get; set; }
             public ToolStripMenuItem ToolStripMenuItemMoveUp { get; set; }
             public ToolStripMenuItem ToolStripMenuItemMoveDown { get; set; }
+            public ToolStripMenuItem ToolStripMenuItemProtect { get; set; }
             public ToolStripMenuItem ToolStripMenuItemMove { get; set; }
             public ToolStripMenuItem ToolStripMenuItemCopy { get; set; }
             public ToolStripMenuItem ToolStripMenuItemRename { get; set; }
@@ -121,6 +122,7 @@ namespace SegaCdMemoryManager
                 ToolStripMenuItemExport = toolStripMenuItemExport1,
                 ToolStripMenuItemMoveUp = toolStripMenuItemMoveUp1,
                 ToolStripMenuItemMoveDown = toolStripMenuItemMoveDown1,
+                ToolStripMenuItemProtect = toolStripMenuItemProtect1,
                 ToolStripMenuItemMove = toolStripMenuItemMove1,
                 ToolStripMenuItemCopy = toolStripMenuItemCopy1,
                 ToolStripMenuItemRename = toolStripMenuItemRename1,
@@ -148,6 +150,7 @@ namespace SegaCdMemoryManager
                 ToolStripMenuItemExport = toolStripMenuItemExport2,
                 ToolStripMenuItemMoveUp = toolStripMenuItemMoveUp2,
                 ToolStripMenuItemMoveDown = toolStripMenuItemMoveDown2,
+                ToolStripMenuItemProtect = toolStripMenuItemProtect2,
                 ToolStripMenuItemMove = toolStripMenuItemMove2,
                 ToolStripMenuItemCopy = toolStripMenuItemCopy2,
                 ToolStripMenuItemRename = toolStripMenuItemRename2,
@@ -318,9 +321,15 @@ namespace SegaCdMemoryManager
 
             editor.ToolStripButtonSave.Enabled = _isModified[id];
             editor.TextBoxFileName.Text = Path.GetFileName(bramFile.Path);
-            editor.ToolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} {(bramFile.FilesUsed == 1 ? "file" : "files")}";
-            editor.ToolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} {(bramFile.BlocksFree == 1 ? "block" : "blocks")} free";
-            editor.ToolStripStatusLabelFileSize.Text = $"{bramFile.SizeInBytes:n0} bytes";
+
+            var filesString = bramFile.FilesUsed == 1 ? "file" : "files";
+            editor.ToolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} {filesString}";
+
+            var blocksString = bramFile.BlocksFree == 1 ? "block free" : "blocks free";
+            editor.ToolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} {blocksString}";
+
+            var bytesString = bramFile.BlocksFree == 1 ? "bytes" : "bytes";
+            editor.ToolStripStatusLabelFileSize.Text = $"{bramFile.SizeInBytes:n0} {bytesString}";
 
             UpdateEntryButtons(id);
         }
@@ -328,23 +337,37 @@ namespace SegaCdMemoryManager
         private void UpdateEntryButtons(int id)
         {
             var editor = _editors[id];
+
+            // enables items if entry selected
             bool state = editor.ListViewEntries.SelectedIndices.Count > 0;
             editor.ToolStripButtonExport.Enabled = state;
             editor.ToolStripButtonMove.Enabled = state;
             editor.ToolStripButtonCopy.Enabled = state;
             editor.ToolStripButtonDelete.Enabled = state;
             editor.ToolStripMenuItemExport.Enabled = state;
+            editor.ToolStripMenuItemProtect.Enabled = state;
             editor.ToolStripMenuItemMove.Enabled = state;
             editor.ToolStripMenuItemCopy.Enabled = state;
             editor.ToolStripMenuItemRename.Enabled = state;
             editor.ToolStripMenuItemDelete.Enabled = state;
-
+            
+            // enables items if not at end of list
             var selectedIndices = editor.ListViewEntries.SelectedIndices;
             int totalItems = editor.ListViewEntries.Items.Count - 1;
             editor.ToolStripMenuItemMoveUp.Enabled = state && selectedIndices[0] > 0;
             editor.ToolStripMenuItemMoveDown.Enabled = state && selectedIndices[selectedIndices.Count - 1] < totalItems;
-        }
 
+            // checks item if entry is protected
+            var selectedItems = editor.ListViewEntries.SelectedItems;
+            var entries = selectedItems.Cast<ListViewItem>().Select(listViewItem => listViewItem.Tag as SaveEntry).ToList();
+            var allProtected = entries.All(entry => entry.Protect);
+            var anyProtected = entries.Any(entry => entry.Protect);
+            editor.ToolStripMenuItemProtect.Checked = anyProtected;
+            editor.ToolStripMenuItemProtect.CheckState = !anyProtected ? CheckState.Unchecked :
+                                                          allProtected ? CheckState.Checked :
+                                                          CheckState.Indeterminate;
+        }
+    
         private void CopyEntry(int sourceId)
         {
             int destinationId = sourceId == (int)File.Left ? (int)File.Right : (int)File.Left;
@@ -627,6 +650,34 @@ namespace SegaCdMemoryManager
             Reload(id);
         }
 
+        private void ToggleProtect(int id)
+        {
+            var bramFile = _bramFiles[id];
+            int modified = 0;
+
+            foreach (ListViewItem listViewItem in _editors[id].ListViewEntries.SelectedItems)
+            {
+                try
+                {
+                    var entry = listViewItem.Tag as SaveEntry;
+                    bramFile.ProtectEntry(entry);
+                    modified++;
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(
+                        error.Message,
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                }
+            }
+
+            SetModified(id, modified > 0);
+            Reload(id);
+        }
+
         private void ResizeFile(int id)
         {
             try
@@ -707,6 +758,14 @@ namespace SegaCdMemoryManager
             int tag = Convert.ToInt32(control.Tag);
 
             ExportEntry(tag);
+        }
+
+        private void ClickProtectButton(object sender, EventArgs e)
+        {
+            var control = sender as ToolStripItem;
+            int tag = Convert.ToInt32(control.Tag);
+
+            ToggleProtect(tag);
         }
 
         private void ClickMoveButton(object sender, EventArgs e)

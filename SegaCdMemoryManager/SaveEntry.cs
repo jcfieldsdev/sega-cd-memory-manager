@@ -54,7 +54,7 @@ namespace SegaCdMemoryManager
         public bool Protect { get => _protect; set => _protect = value; }
         public byte[] Data { get => _data; }
         public int SizeInBlocks { get => SizeInBytes / (int)Format.BlockSize; }
-        public int SizeInBytes { get => _protect == true ? 2 * _data.Length : _data.Length; }
+        public int SizeInBytes { get => _protect ? 2 * _data.Length : _data.Length; }
 
         public SaveEntry(string name, bool protect, byte[] data)
         {
@@ -68,7 +68,7 @@ namespace SegaCdMemoryManager
         {
             int length = _data.Length + (int)RecordLength.Name + (int)RecordLength.Protect;
             byte[] name = Encoding.ASCII.GetBytes(_name.PadRight((int)RecordLength.Name, '\0'));
-            byte protect = _protect == true ? (byte)ProtectState.On : (byte)ProtectState.Off;
+            byte protect = _protect ? (byte)ProtectState.On : (byte)ProtectState.Off;
 
             var contents = new List<byte>(length);
             contents.AddRange(_data);
