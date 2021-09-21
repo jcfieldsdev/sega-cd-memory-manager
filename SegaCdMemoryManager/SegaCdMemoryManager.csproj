@@ -57,7 +57,7 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="BlockEncoder.cs" />
+    <Compile Include="BlockConverter.cs" />
     <Compile Include="ResizeDialog.cs">
       <SubType>Form</SubType>
     </Compile>

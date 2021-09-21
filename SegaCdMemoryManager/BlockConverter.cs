@@ -25,17 +25,11 @@ using System.Threading.Tasks;
 
 namespace SegaCdMemoryManager
 {
-    static class BlockEncoder
+    static class BlockConverter
     {
         enum Format
         {
             BlockSize = 64
-        }
-
-        enum ProtectState
-        {
-            Off = 0x00,
-            On = 0xff
         }
 
         public static byte[] Decode(byte[] data)
@@ -48,9 +42,9 @@ namespace SegaCdMemoryManager
             return DecodeBigEndian(data);
         }
 
-        public static byte[] DecodeIfProtected(byte[] data, byte protect)
+        public static byte[] DecodeIfProtected(byte[] data, bool protect)
         {
-            if (protect == (byte)ProtectState.On)
+            if (protect == true)
             {
                 return Decode(data);
             }
@@ -115,9 +109,9 @@ namespace SegaCdMemoryManager
             return EncodeBigEndian(data);
         }
 
-        public static byte[] EncodeIfProtected(byte[] data, byte protect)
+        public static byte[] EncodeIfProtected(byte[] data, bool protect)
         {
-            if (protect == (byte)ProtectState.On)
+            if (protect == false)
             {
                 return Encode(data);
             }

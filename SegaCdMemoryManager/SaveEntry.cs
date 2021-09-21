@@ -40,17 +40,23 @@ namespace SegaCdMemoryManager
             Protect = 1
         }
 
+        enum ProtectState
+        {
+            Off = 0x00,
+            On = 0xff
+        }
+
         private string _name;
-        private readonly byte _protect;
+        private bool _protect;
         private readonly byte[] _data;
 
-        public string Name { get => _name; }
-        public byte Protect { get => _protect; }
+        public string Name { get => _name; set => _name = value; }
+        public bool Protect { get => _protect; set => _protect = value; }
         public byte[] Data { get => _data; }
-        public int SizeInBlocks { get => _data.Length / (int)Format.BlockSize; }
-        public int SizeInBytes { get => _data.Length; }
+        public int SizeInBlocks { get => SizeInBytes / (int)Format.BlockSize; }
+        public int SizeInBytes { get => _protect == true ? 2 * _data.Length : _data.Length; }
 
-        public SaveEntry(string name, byte protect, byte[] data)
+        public SaveEntry(string name, bool protect, byte[] data)
         {
 
             _name = name;
@@ -62,12 +68,12 @@ namespace SegaCdMemoryManager
         {
             int length = _data.Length + (int)RecordLength.Name + (int)RecordLength.Protect;
             byte[] name = Encoding.ASCII.GetBytes(_name.PadRight((int)RecordLength.Name, '\0'));
-            byte[] data = BlockEncoder.DecodeIfProtected(_data, _protect);
+            byte protect = _protect == true ? (byte)ProtectState.On : (byte)ProtectState.Off;
 
             var contents = new List<byte>(length);
-            contents.AddRange(data);
+            contents.AddRange(_data);
             contents.AddRange(name);
-            contents.Add(_protect);
+            contents.Add(protect);
 
             File.WriteAllBytes(path, contents.ToArray());
         }

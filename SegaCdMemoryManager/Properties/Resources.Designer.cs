@@ -61,26 +61,6 @@ namespace SegaCdMemoryManager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon appicon_model1 {
-            get {
-                object obj = ResourceManager.GetObject("appicon_model1", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon appicon_model2 {
-            get {
-                object obj = ResourceManager.GetObject("appicon_model2", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         internal static byte[] blank {
@@ -256,6 +236,26 @@ namespace SegaCdMemoryManager.Properties {
         internal static System.Drawing.Bitmap icon_save2 {
             get {
                 object obj = ResourceManager.GetObject("icon_save2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap image_model1 {
+            get {
+                object obj = ResourceManager.GetObject("image_model1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap image_model2 {
+            get {
+                object obj = ResourceManager.GetObject("image_model2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
