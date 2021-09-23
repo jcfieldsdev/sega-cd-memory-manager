@@ -322,14 +322,22 @@ namespace SegaCdMemoryManager
             editor.ToolStripButtonSave.Enabled = _isModified[id];
             editor.TextBoxFileName.Text = Path.GetFileName(bramFile.Path);
 
-            var filesString = bramFile.FilesUsed == 1 ? "file" : "files";
-            editor.ToolStripStatusLabelFilesUsed.Text = $"{bramFile.FilesUsed:n0} {filesString}";
-
-            var blocksString = bramFile.BlocksFree == 1 ? "block free" : "blocks free";
-            editor.ToolStripStatusLabelBlocksFree.Text = $"{bramFile.BlocksFree:n0} {blocksString}";
-
-            var bytesString = bramFile.BlocksFree == 1 ? "bytes" : "bytes";
-            editor.ToolStripStatusLabelFileSize.Text = $"{bramFile.SizeInBytes:n0} {bytesString}";
+            var stringFormat = "{0:n0} {1}";
+            editor.ToolStripStatusLabelFilesUsed.Text = String.Format(
+                stringFormat,
+                bramFile.FilesUsed,
+                bramFile.FilesUsed == 1 ? "file" : "files"
+            );
+            editor.ToolStripStatusLabelBlocksFree.Text = String.Format(
+                stringFormat,
+                bramFile.BlocksFree,
+                bramFile.BlocksFree == 1 ? "block free" : "blocks free"
+            );
+            editor.ToolStripStatusLabelFileSize.Text = String.Format(
+                stringFormat,
+                bramFile.SizeInBytes,
+                bramFile.BlocksFree == 1 ? "bytes" : "bytes"
+            );
 
             UpdateEntryButtons(id);
         }
